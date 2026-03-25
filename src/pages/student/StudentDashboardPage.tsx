@@ -13,17 +13,17 @@ export const StudentDashboardPage = () => {
 
   useEffect(() => {
     const load = async () => {
-      const [announcementData, attendanceData, requestData, reservationData] = await Promise.all([
-        announcementService.list(),
-        attendanceService.listForCurrentUser(),
-        requestService.listForCurrentUser(),
-        roomService.listReservationsForCurrentUser(),
+      const [announcementData, attendanceTotal, requestTotal, reservationTotal] = await Promise.all([
+        announcementService.listRecent(5),
+        attendanceService.countForCurrentUser(),
+        requestService.countForCurrentUser(),
+        roomService.countReservationsForCurrentUser(),
       ])
 
-      setAnnouncements(announcementData.slice(0, 5))
-      setAttendanceCount(attendanceData.length)
-      setRequestCount(requestData.length)
-      setReservationCount(reservationData.length)
+      setAnnouncements(announcementData)
+      setAttendanceCount(attendanceTotal)
+      setRequestCount(requestTotal)
+      setReservationCount(reservationTotal)
     }
 
     load()

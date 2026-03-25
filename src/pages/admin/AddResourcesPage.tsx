@@ -17,6 +17,9 @@ export const AddResourcesPage = () => {
   const [description, setDescription] = useState('')
   const [totalCopies, setTotalCopies] = useState(1)
   const [availableCopies, setAvailableCopies] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const load = async () => {
     const data = await resourceService.list()
@@ -52,32 +55,46 @@ export const AddResourcesPage = () => {
     setDescription('')
     setTotalCopies(1)
     setAvailableCopies(1)
+    setError(null)
+    setSuccess(false)
   }
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setError(null)
+    setSuccess(false)
+    setIsLoading(true)
 
-    const payload = {
-      title,
-      resource_type: resourceType,
-      author,
-      publisher: publisher || null,
-      publication_year: publicationYear || null,
-      identifier_code: identifierCode || null,
-      category: category || null,
-      description: description || null,
-      total_copies: totalCopies,
-      available_copies: Math.min(availableCopies, totalCopies),
+    try {
+      const payload = {
+        title,
+        resource_type: resourceType,
+        author,
+        publisher: publisher || null,
+        publication_year: publicationYear || null,
+        identifier_code: identifierCode || null,
+        category: category || null,
+        description: description || null,
+        total_copies: totalCopies,
+        available_copies: Math.min(availableCopies, totalCopies),
+      }
+
+      if (editingId) {
+        await resourceService.update(editingId, payload)
+      } else {
+        await resourceService.create(payload)
+      }
+
+      setSuccess(true)
+      resetForm()
+      await load()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save resource'
+      setError(message)
+      console.error('Error saving resource:', err)
+    } finally {
+      setIsLoading(false)
     }
-
-    if (editingId) {
-      await resourceService.update(editingId, payload)
-    } else {
-      await resourceService.create(payload)
-    }
-
-    resetForm()
-    await load()
   }
 
   const edit = (item: LibraryResource) => {
@@ -107,6 +124,8 @@ export const AddResourcesPage = () => {
       </header>
 
       <Card title={editingId ? 'Edit Resource' : 'Add New Resource'}>
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">Resource saved successfully!</div>}
         <form className="form-grid" onSubmit={submit}>
           <label>
             Title
@@ -182,11 +201,11 @@ export const AddResourcesPage = () => {
             />
           </label>
           <div className="actions">
-            <button className="btn" type="submit">
-              {editingId ? 'Update Resource' : 'Add Resource'}
+            <button className="btn" type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : editingId ? 'Update Resource' : 'Add Resource'}
             </button>
             {editingId ? (
-              <button className="btn outline" type="button" onClick={resetForm}>
+              <button className="btn outline" type="button" onClick={resetForm} disabled={isLoading}>
                 Cancel
               </button>
             ) : null}

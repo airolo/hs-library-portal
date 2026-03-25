@@ -34,7 +34,19 @@ export const RequestManagementPage = () => {
   }, [])
 
   const updateStatus = async (id: string, status: ResourceRequest['status']) => {
-    await requestService.updateStatus(id, status)
+    const actionLabel = status === 'approved' ? 'approve' : 'reject'
+    const promptMessage = `Enter a note to ${actionLabel} this request (optional):`
+    const noteInput = window.prompt(promptMessage)
+
+    if (noteInput === null) {
+      return
+    }
+
+    const trimmedNote = noteInput.trim()
+    const fallbackNote = status === 'approved' ? 'Request approved by admin.' : 'Request rejected by admin.'
+    const adminNote = trimmedNote || fallbackNote
+
+    await requestService.updateStatus(id, status, adminNote)
     await load()
   }
 
@@ -47,13 +59,14 @@ export const RequestManagementPage = () => {
 
       <Card title="All Requests">
         <DataTable
-          headers={['Student', 'Program', 'Title', 'Type', 'Status', 'Actions']}
+          headers={['Student', 'Program', 'Title', 'Type', 'Status', 'Admin Notes', 'Actions']}
           rows={requests.map((item) => [
             item.profiles?.full_name || '-',
             item.profiles?.program || '-',
             item.title,
             item.resource_type,
             item.status,
+            item.admin_notes || '-',
             <div className="actions" key={item.id}>
               <button className="btn xs" type="button" onClick={() => updateStatus(item.id, 'approved')}>
                 Approve

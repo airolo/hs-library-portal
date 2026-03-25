@@ -68,6 +68,9 @@ export const AttendancePage = () => {
       </Card>
 
       <Card title="Attendance History">
+        <p className="notice">
+          Notice: Don't forget to log out (Time Out) after your visit to ensure accurate attendance records.
+        </p>
         <DataTable
           headers={['Date', 'Time In', 'Time Out', 'Source']}
           rows={logs.map((log) => [

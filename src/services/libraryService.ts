@@ -19,6 +19,16 @@ export const announcementService = {
     if (error) throw error
     return data as Announcement[]
   },
+  async listRecent(limit = 5) {
+    const { data, error } = await supabase
+      .from('announcements')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) throw error
+    return data as Announcement[]
+  },
   async create(payload: Pick<Announcement, 'title' | 'content' | 'event_date'>) {
     const { error } = await supabase.from('announcements').insert(payload)
     if (error) throw error
@@ -58,6 +68,21 @@ export const attendanceService = {
 
     if (error) throw error
     return data as (AttendanceLog & { profiles: { full_name: string; program: string | null } })[]
+  },
+  async countForCurrentUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return 0
+
+    const { count, error } = await supabase
+      .from('attendance_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('student_id', user.id)
+
+    if (error) throw error
+    return count ?? 0
   },
   async timeIn() {
     const {
@@ -155,6 +180,21 @@ export const requestService = {
 
     if (error) throw error
     return data as (ResourceRequest & { profiles: { full_name: string; program: string | null } })[]
+  },
+  async countForCurrentUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return 0
+
+    const { count, error } = await supabase
+      .from('resource_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('student_id', user.id)
+
+    if (error) throw error
+    return count ?? 0
   },
   async create(payload: Pick<ResourceRequest, 'title' | 'resource_type' | 'details'>) {
     const {
@@ -295,6 +335,21 @@ export const roomService = {
 
     if (error) throw error
     return data as RoomReservation[]
+  },
+  async countReservationsForCurrentUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return 0
+
+    const { count, error } = await supabase
+      .from('room_reservations')
+      .select('id', { count: 'exact', head: true })
+      .eq('student_id', user.id)
+
+    if (error) throw error
+    return count ?? 0
   },
   async listRooms() {
     const { data, error } = await supabase

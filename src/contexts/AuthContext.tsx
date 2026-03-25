@@ -11,14 +11,16 @@ import type { Profile, UserRole } from '../types/domain'
 import { AuthContext } from './AuthContextStore'
 import type { AuthContextValue } from './authTypes'
 
+const PROFILE_LOAD_TIMEOUT_MS = 2000
+
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const buildProfileFromUser = useCallback((authUser: User) => {
+  const buildProfileFromUser = useCallback((authUser: User): Profile => {
     const metadata = (authUser.user_metadata ?? {}) as Record<string, unknown>
-    const role = metadata.role === 'admin' ? 'admin' : 'student'
+    const role: UserRole = metadata.role === 'admin' ? 'admin' : 'student'
 
     return {
       id: authUser.id,
@@ -29,6 +31,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       role,
       program: typeof metadata.program === 'string' ? metadata.program : null,
       year_level: typeof metadata.year_level === 'number' ? metadata.year_level : null,
+      created_at: new Date().toISOString(),
     }
   }, [])
 
@@ -45,7 +48,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       .maybeSingle<Profile>()
 
     if (error) {
-      setProfile(null)
+      setProfile(buildProfileFromUser(authUser))
       return
     }
 
@@ -63,28 +66,56 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       .single<Profile>()
 
     if (upsertError) {
-      setProfile(null)
+      setProfile(fallbackProfile)
       return
     }
 
     setProfile(insertedProfile)
   }, [buildProfileFromUser])
 
+  const loadProfileWithTimeout = useCallback(async (authUser: User | null) => {
+    if (!authUser) {
+      setProfile(null)
+      return
+    }
+
+    let resolved = false
+
+    await Promise.race([
+      (async () => {
+        await loadProfile(authUser)
+        resolved = true
+      })(),
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, PROFILE_LOAD_TIMEOUT_MS)
+      }),
+    ])
+
+    if (!resolved) {
+      setProfile((currentProfile) => currentProfile ?? buildProfileFromUser(authUser))
+    }
+  }, [buildProfileFromUser, loadProfile])
+
   useEffect(() => {
     let mounted = true
 
     const initialize = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
 
-      if (!mounted) {
-        return
+        if (!mounted) {
+          return
+        }
+
+        setUser(session?.user ?? null)
+        await loadProfileWithTimeout(session?.user ?? null)
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
       }
-
-      setUser(session?.user ?? null)
-      await loadProfile(session?.user ?? null)
-      setLoading(false)
     }
 
     initialize()
@@ -92,16 +123,19 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null)
-      await loadProfile(session?.user ?? null)
-      setLoading(false)
+      try {
+        setUser(session?.user ?? null)
+        await loadProfileWithTimeout(session?.user ?? null)
+      } finally {
+        setLoading(false)
+      }
     })
 
     return () => {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [loadProfile])
+  }, [loadProfileWithTimeout])
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
