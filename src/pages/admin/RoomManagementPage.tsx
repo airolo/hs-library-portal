@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
 import { roomService } from '../../services/libraryService'
@@ -52,13 +53,18 @@ export const RoomManagementPage = () => {
             `${item.start_time} - ${item.end_time}`,
             item.purpose,
             item.status,
-            <div className="actions" key={item.id}>
-              <button className="btn xs" type="button" onClick={() => setStatus(item.id, 'approved')}>
-                Approve
-              </button>
-              <button className="btn xs outline" type="button" onClick={() => setStatus(item.id, 'rejected')}>
-                Reject
-              </button>
+            <div className="actions actions-nowrap" key={item.id}>
+              <ActionIconButton
+                icon="approve"
+                label="Approve"
+                onClick={() => setStatus(item.id, 'approved')}
+              />
+              <ActionIconButton
+                icon="reject"
+                label="Reject"
+                variant="outline"
+                onClick={() => setStatus(item.id, 'rejected')}
+              />
             </div>,
           ])}
         />

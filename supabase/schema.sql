@@ -33,6 +33,7 @@ create table if not exists public.research_repository (
   id uuid primary key default uuid_generate_v4(),
   title text not null,
   abstract text not null,
+  location text not null default 'Unassigned shelf',
   program text not null,
   year int not null,
   keywords text[] not null default '{}',
@@ -41,6 +42,9 @@ create table if not exists public.research_repository (
   file_url text,
   created_at timestamptz not null default now()
 );
+
+alter table public.research_repository
+add column if not exists location text not null default 'Unassigned shelf';
 
 create table if not exists public.resource_requests (
   id uuid primary key default uuid_generate_v4(),
@@ -58,6 +62,7 @@ create table if not exists public.library_resources (
   title text not null,
   resource_type text not null check (resource_type in ('book', 'journal')),
   author text not null,
+  location text not null default 'Unassigned shelf',
   publisher text,
   publication_year int,
   identifier_code text,
@@ -67,6 +72,9 @@ create table if not exists public.library_resources (
   available_copies int not null check (available_copies >= 0 and available_copies <= total_copies),
   created_at timestamptz not null default now()
 );
+
+alter table public.library_resources
+add column if not exists location text not null default 'Unassigned shelf';
 
 create table if not exists public.resource_borrow_transactions (
   id uuid primary key default uuid_generate_v4(),
@@ -268,9 +276,7 @@ using (public.is_admin(auth.uid()));
 
 insert into public.discussion_rooms(name, capacity, location)
 values
-  ('Anatomy Collaboration Room', 8, '2F East Wing'),
-  ('Physiology Discussion Hub', 10, '2F West Wing'),
-  ('Clinical Skills Meeting Room', 12, '3F Learning Commons')
+  ('Office of the Librarian / Discussion Room', 6, 'Main Floor')
 on conflict (name) do nothing;
 
 insert into public.library_resources(

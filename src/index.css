@@ -99,6 +99,54 @@ textarea:focus {
   font-size: 0.8rem;
 }
 
+.icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--primary-strong);
+}
+
+.icon-btn.outline {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.icon-btn.outline:hover {
+  background: #f3f8ff;
+}
+
+.icon-btn.danger {
+  background: #fff;
+  border: 1px solid #f1b4b4;
+  color: var(--danger);
+}
+
+.icon-btn.danger:hover {
+  background: #fff3f3;
+}
+
+.icon-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.icon-btn svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -128,6 +176,20 @@ textarea:focus {
   font-size: 0.93rem;
   font-weight: 600;
   color: var(--ink);
+}
+
+.compact-admin-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.compact-admin-form .full-row {
+  grid-column: 1 / -1;
+}
+
+.compact-admin-form textarea {
+  min-height: 88px;
 }
 
 .error-text {
@@ -275,6 +337,11 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
+.actions-nowrap {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
 .filters-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -339,10 +406,18 @@ textarea:focus {
   .quick-links {
     grid-template-columns: 1fr;
   }
+
+  .compact-admin-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 780px) {
   .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-admin-form {
     grid-template-columns: 1fr;
   }
 }

@@ -47,7 +47,18 @@ export const ResourceRequestsPage = () => {
         <h2>Book and Resource Requests</h2>
         <p>Submit requests and track approval status updates.</p>
       </header>
-
+<Card title="Request Tracking">
+        <DataTable
+          headers={['Date', 'Title', 'Type', 'Status', 'Admin Notes']}
+          rows={requests.map((item) => [
+            formatDateTime(item.created_at),
+            item.title,
+            item.resource_type,
+            item.status,
+            item.admin_notes || '-',
+          ])}
+        />
+      </Card>
       <Card title="Create Request">
         <form onSubmit={submitRequest} className="form-grid">
           <label>
@@ -59,8 +70,6 @@ export const ResourceRequestsPage = () => {
             <select value={resourceType} onChange={(event) => setResourceType(event.target.value)}>
               <option>Book</option>
               <option>Journal</option>
-              <option>E-book</option>
-              <option>Other</option>
             </select>
           </label>
           <label>
@@ -71,19 +80,6 @@ export const ResourceRequestsPage = () => {
             Submit Request
           </button>
         </form>
-      </Card>
-
-      <Card title="Request Tracking">
-        <DataTable
-          headers={['Date', 'Title', 'Type', 'Status', 'Admin Notes']}
-          rows={requests.map((item) => [
-            formatDateTime(item.created_at),
-            item.title,
-            item.resource_type,
-            item.status,
-            item.admin_notes || '-',
-          ])}
-        />
       </Card>
     </div>
   )

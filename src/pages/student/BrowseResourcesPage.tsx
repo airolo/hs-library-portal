@@ -1,42 +1,32 @@
 import { useEffect, useState } from 'react'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
+import { Modal } from '../../components/ui/Modal'
 import { resourceService } from '../../services/libraryService'
-import type { LibraryResource, ResourceBorrowTransaction } from '../../types/domain'
-import { formatDate } from '../../utils/format'
+import type { LibraryResource } from '../../types/domain'
 
 export const BrowseResourcesPage = () => {
   const [resources, setResources] = useState<LibraryResource[]>([])
-  const [myBorrows, setMyBorrows] = useState<ResourceBorrowTransaction[]>([])
+  const [selectedResource, setSelectedResource] = useState<LibraryResource | null>(null)
   const [search, setSearch] = useState('')
   const [resourceType, setResourceType] = useState<'' | 'book' | 'journal'>('')
-  const [error, setError] = useState<string | null>(null)
 
   const load = async () => {
-    const [resourceData, borrowData] = await Promise.all([
-      resourceService.list({ query: search || undefined, resourceType }),
-      resourceService.listBorrowsForCurrentUser(),
-    ])
-
+    const resourceData = await resourceService.list({ query: search || undefined, resourceType })
     setResources(resourceData)
-    setMyBorrows(borrowData)
   }
 
   useEffect(() => {
     let mounted = true
 
     const initialize = async () => {
-      const [resourceData, borrowData] = await Promise.all([
-        resourceService.list(),
-        resourceService.listBorrowsForCurrentUser(),
-      ])
+      const resourceData = await resourceService.list()
 
       if (!mounted) {
         return
       }
 
       setResources(resourceData)
-      setMyBorrows(borrowData)
     }
 
     void initialize()
@@ -46,23 +36,11 @@ export const BrowseResourcesPage = () => {
     }
   }, [])
 
-  const borrowResource = async (resourceId: string) => {
-    setError(null)
-
-    try {
-      await resourceService.borrow(resourceId)
-      await load()
-    } catch (caughtError) {
-      const message = caughtError instanceof Error ? caughtError.message : 'Borrowing failed.'
-      setError(message)
-    }
-  }
-
   return (
     <div className="page-grid">
       <header>
         <h2>Browse Resources</h2>
-        <p>Browse books and journals currently available for borrowing.</p>
+        <p>View books and journals available in OPAC and newly uploaded collections.</p>
       </header>
 
       <Card title="Catalog Filters">
@@ -89,48 +67,73 @@ export const BrowseResourcesPage = () => {
       </Card>
 
       <Card title="Available Catalog">
-        {error ? <p className="error-text">{error}</p> : null}
         <DataTable
           headers={[
             'Title',
             'Type',
             'Author',
+            'Location',
             'Category',
-            'Copies (Available/Total)',
+            'Copies',
             'Action',
           ]}
           rows={resources.map((item) => [
             item.title,
             item.resource_type,
             item.author,
+            item.location || '-',
             item.category || '-',
             `${item.available_copies}/${item.total_copies}`,
             <button
               key={item.id}
               type="button"
               className="btn xs"
-              disabled={item.available_copies <= 0}
-              onClick={() => borrowResource(item.id)}
+              onClick={() => setSelectedResource(item)}
             >
-              {item.available_copies <= 0 ? 'Unavailable' : 'Borrow'}
+              View
             </button>,
           ])}
         />
       </Card>
 
-      <Card title="My Borrowed Resources">
-        <DataTable
-          headers={['Title', 'Type', 'Author', 'Borrowed Date', 'Due Date', 'Status']}
-          rows={myBorrows.map((item) => [
-            item.library_resources?.title || '-',
-            item.library_resources?.resource_type || '-',
-            item.library_resources?.author || '-',
-            formatDate(item.borrowed_at),
-            formatDate(item.due_at),
-            item.status,
-          ])}
-        />
-      </Card>
+      <Modal
+        isOpen={!!selectedResource}
+        title={selectedResource?.title ?? ''}
+        onClose={() => setSelectedResource(null)}
+      >
+        {selectedResource && (
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            <div>
+              <strong>Type:</strong> {selectedResource.resource_type}
+            </div>
+            <div>
+              <strong>Author:</strong> {selectedResource.author}
+            </div>
+            <div>
+              <strong>Location:</strong> {selectedResource.location || '-'}
+            </div>
+            <div>
+              <strong>Category:</strong> {selectedResource.category || '-'}
+            </div>
+            <div>
+              <strong>Publisher:</strong> {selectedResource.publisher || '-'}
+            </div>
+            <div>
+              <strong>Publication Year:</strong> {selectedResource.publication_year || '-'}
+            </div>
+            <div>
+              <strong>ISBN / ISSN:</strong> {selectedResource.identifier_code || '-'}
+            </div>
+            <div>
+              <strong>Description:</strong>
+              <p style={{ marginTop: '0.5rem' }}>{selectedResource.description || 'No description available.'}</p>
+            </div>
+            <div>
+              <strong>Copies:</strong> {selectedResource.available_copies}/{selectedResource.total_copies}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

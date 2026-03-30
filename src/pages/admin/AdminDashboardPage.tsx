@@ -64,8 +64,7 @@ export const AdminDashboardPage = () => {
 
       <Card title="Analytics Notes">
         <p>
-          Metrics are computed from attendance logs. Connect Supabase realtime subscriptions for
-          live updates if needed.
+          Metrics are computed from attendance logs. Daily and monthly visits count the number of check-ins for the current day and month,
         </p>
       </Card>
     </div>

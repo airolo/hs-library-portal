@@ -1,17 +1,29 @@
 import { useEffect, useState } from 'react'
+import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
+import { Modal } from '../../components/ui/Modal'
 import { researchService } from '../../services/libraryService'
 import type { ResearchItem } from '../../types/domain'
 
 export const ResearchManagementPage = () => {
   const [items, setItems] = useState<ResearchItem[]>([])
+  const [errorMessage, setErrorMessage] = useState('')
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
+  const [location, setLocation] = useState('')
   const [program, setProgram] = useState('')
   const [year, setYear] = useState(new Date().getFullYear())
   const [abstract, setAbstract] = useState('')
   const [keywords, setKeywords] = useState('')
+  const [editingItem, setEditingItem] = useState<ResearchItem | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editAuthor, setEditAuthor] = useState('')
+  const [editLocation, setEditLocation] = useState('')
+  const [editProgram, setEditProgram] = useState('')
+  const [editYear, setEditYear] = useState(0)
+  const [editAbstract, setEditAbstract] = useState('')
+  const [editKeywords, setEditKeywords] = useState('')
 
   const load = async () => {
     const data = await researchService.list()
@@ -37,26 +49,77 @@ export const ResearchManagementPage = () => {
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await researchService.create({
-      title,
-      author,
-      program,
-      year,
-      abstract,
-      keywords: keywords.split(',').map((keyword) => keyword.trim()).filter(Boolean),
-      status: 'pending',
-      file_url: null,
-    })
-    setTitle('')
-    setAuthor('')
-    setProgram('')
-    setAbstract('')
-    setKeywords('')
-    await load()
+    setErrorMessage('')
+
+    try {
+      await researchService.create({
+        title,
+        author,
+        location,
+        program,
+        year,
+        abstract,
+        keywords: keywords.split(',').map((keyword) => keyword.trim()).filter(Boolean),
+        status: 'pending',
+        file_url: null,
+      })
+      setTitle('')
+      setAuthor('')
+      setLocation('')
+      setProgram('')
+      setAbstract('')
+      setKeywords('')
+      await load()
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to save research entry.')
+    }
   }
 
   const setStatus = async (id: string, status: ResearchItem['status']) => {
     await researchService.updateStatus(id, status)
+    await load()
+  }
+
+  const handleEdit = (item: ResearchItem) => {
+    setErrorMessage('')
+    setEditingItem(item)
+    setEditTitle(item.title)
+    setEditAuthor(item.author)
+    setEditLocation(item.location)
+    setEditProgram(item.program)
+    setEditYear(item.year)
+    setEditAbstract(item.abstract)
+    setEditKeywords(item.keywords.join(', '))
+  }
+
+  const handleSaveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!editingItem) return
+
+    setErrorMessage('')
+
+    try {
+      await researchService.update(editingItem.id, {
+        title: editTitle,
+        author: editAuthor,
+        location: editLocation,
+        program: editProgram,
+        year: editYear,
+        abstract: editAbstract,
+        keywords: editKeywords.split(',').map((keyword) => keyword.trim()).filter(Boolean),
+      })
+      setEditingItem(null)
+      await load()
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to update research entry.')
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this research entry?')) {
+      return
+    }
+    await researchService.remove(id)
     await load()
   }
 
@@ -68,7 +131,8 @@ export const ResearchManagementPage = () => {
       </header>
 
       <Card title="Upload Research Entry">
-        <form onSubmit={submit} className="form-grid">
+        <form onSubmit={submit} className="form-grid compact-admin-form">
+          {errorMessage && <p className="error-text full-row">{errorMessage}</p>}
           <label>
             Title
             <input required value={title} onChange={(event) => setTitle(event.target.value)} />
@@ -78,6 +142,15 @@ export const ResearchManagementPage = () => {
             <input required value={author} onChange={(event) => setAuthor(event.target.value)} />
           </label>
           <label>
+            Location (Research Collection Shelf)
+            <input
+              required
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+              placeholder="e.g., Shelf B2 - Thesis Section"
+            />
+          </label>
+          <label>
             Program
             <input required value={program} onChange={(event) => setProgram(event.target.value)} />
           </label>
@@ -85,40 +158,129 @@ export const ResearchManagementPage = () => {
             Year
             <input type="number" required value={year} onChange={(event) => setYear(Number(event.target.value))} />
           </label>
-          <label>
+          <label className="full-row">
             Abstract
             <textarea required rows={3} value={abstract} onChange={(event) => setAbstract(event.target.value)} />
           </label>
-          <label>
+          <label className="full-row">
             Keywords (comma-separated)
             <input value={keywords} onChange={(event) => setKeywords(event.target.value)} />
           </label>
-          <button className="btn" type="submit">
-            Save Entry
-          </button>
+          <div className="actions full-row">
+            <button className="btn" type="submit">
+              Save Entry
+            </button>
+          </div>
         </form>
       </Card>
 
       <Card title="Submission Queue">
         <DataTable
-          headers={['Title', 'Author', 'Program', 'Year', 'Status', 'Actions']}
+          headers={['Title', 'Author', 'Location', 'Program', 'Year', 'Status', 'Actions']}
           rows={items.map((item) => [
             item.title,
             item.author,
+            item.location,
             item.program,
             item.year,
             item.status,
-            <div className="actions" key={item.id}>
-              <button type="button" className="btn xs" onClick={() => setStatus(item.id, 'approved')}>
-                Approve
-              </button>
-              <button type="button" className="btn xs outline" onClick={() => setStatus(item.id, 'rejected')}>
-                Reject
-              </button>
+            <div className="actions actions-nowrap" key={item.id}>
+              {item.status === 'pending' && (
+                <>
+                  <ActionIconButton
+                    icon="approve"
+                    label="Approve"
+                    onClick={() => setStatus(item.id, 'approved')}
+                  />
+                  <ActionIconButton
+                    icon="reject"
+                    label="Reject"
+                    variant="outline"
+                    onClick={() => setStatus(item.id, 'rejected')}
+                  />
+                </>
+              )}
+              {item.status !== 'pending' && (
+                <>
+                  <ActionIconButton icon="edit" label="Edit" onClick={() => handleEdit(item)} />
+                  <ActionIconButton
+                    icon="delete"
+                    label="Delete"
+                    variant="danger"
+                    onClick={() => handleDelete(item.id)}
+                  />
+                </>
+              )}
+            
             </div>,
           ])}
         />
       </Card>
+
+      <Modal
+        isOpen={!!editingItem}
+        title="Edit Research Entry"
+        onClose={() => setEditingItem(null)}
+        footer={
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              className="btn outline"
+              onClick={() => setEditingItem(null)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={(e) => {
+                const form = e.currentTarget.closest('.modal-content')?.querySelector('form') as HTMLFormElement
+                if (form) form.requestSubmit()
+              }}
+            >
+              Save Changes
+            </button>
+          </div>
+        }
+      >
+        {editingItem && (
+          <form onSubmit={handleSaveEdit} className="form-grid">
+            <label>
+              Title
+              <input required value={editTitle} onChange={(event) => setEditTitle(event.target.value)} />
+            </label>
+            <label>
+              Author
+              <input required value={editAuthor} onChange={(event) => setEditAuthor(event.target.value)} />
+            </label>
+            <label>
+              Location (Research Collection Shelf)
+              <input
+                required
+                value={editLocation}
+                onChange={(event) => setEditLocation(event.target.value)}
+                placeholder="e.g., Shelf B2 - Thesis Section"
+              />
+            </label>
+            <label>
+              Program
+              <input required value={editProgram} onChange={(event) => setEditProgram(event.target.value)} />
+            </label>
+            <label>
+              Year
+              <input type="number" required value={editYear} onChange={(event) => setEditYear(Number(event.target.value))} />
+            </label>
+            <label>
+              Abstract
+              <textarea required rows={3} value={editAbstract} onChange={(event) => setEditAbstract(event.target.value)} />
+            </label>
+            <label>
+              Keywords (comma-separated)
+              <input value={editKeywords} onChange={(event) => setEditKeywords(event.target.value)} />
+            </label>
+          </form>
+        )}
+      </Modal>
     </div>
   )
 }

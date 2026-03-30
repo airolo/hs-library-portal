@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
+import { Modal } from '../../components/ui/Modal'
 import { researchService } from '../../services/libraryService'
 import type { ResearchItem } from '../../types/domain'
 
@@ -9,6 +10,7 @@ export const ResearchRepositoryPage = () => {
   const [query, setQuery] = useState('')
   const [program, setProgram] = useState('')
   const [year, setYear] = useState<number | ''>('')
+  const [selectedItem, setSelectedItem] = useState<ResearchItem | null>(null)
 
   const loadItems = async () => {
     const data = await researchService.list({
@@ -52,7 +54,12 @@ export const ResearchRepositoryPage = () => {
           </label>
           <label>
             Program
-            <input value={program} onChange={(event) => setProgram(event.target.value)} />
+            <select value={program} onChange={(event) => setProgram(event.target.value)}>
+              <option value="">All</option>
+              <option value="Nursing">Nursing</option>
+              <option value="Dentistry">Dentistry</option>
+              <option value="Medicine">Medicine</option>
+            </select>
           </label>
           <label>
             Year
@@ -72,16 +79,56 @@ export const ResearchRepositoryPage = () => {
 
       <Card title="Repository Entries">
         <DataTable
-          headers={['Title', 'Author', 'Program', 'Year', 'Keywords']}
+          headers={['Title', 'Author', 'Program', 'Year', 'Location', 'Keywords', 'Actions']}
           rows={items.map((item) => [
             item.title,
             item.author,
             item.program,
             item.year,
+            item.location,
             item.keywords.join(', '),
+            <div className="actions" key={item.id}>
+              <button
+                type="button"
+                className="btn xs"
+                onClick={() => setSelectedItem(item)}
+              >
+                View
+              </button>
+            </div>,
           ])}
         />
       </Card>
+
+      <Modal
+        isOpen={!!selectedItem}
+        title={selectedItem?.title ?? ''}
+        onClose={() => setSelectedItem(null)}
+      >
+        {selectedItem && (
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            <div>
+              <strong>Author:</strong> {selectedItem.author}
+            </div>
+            <div>
+              <strong>Program:</strong> {selectedItem.program}
+            </div>
+            <div>
+              <strong>Year:</strong> {selectedItem.year}
+            </div>
+            <div>
+              <strong>Location:</strong> {selectedItem.location}
+            </div>
+            <div>
+              <strong>Keywords:</strong> {selectedItem.keywords.join(', ')}
+            </div>
+            <div>
+              <strong>Abstract:</strong>
+              <p style={{ marginTop: '0.5rem' }}>{selectedItem.abstract}</p>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

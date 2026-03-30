@@ -149,8 +149,16 @@ export const researchService = {
     const { error } = await supabase.from('research_repository').insert(payload)
     if (error) throw error
   },
+  async update(id: string, payload: Partial<Omit<ResearchItem, 'id' | 'created_at'>>) {
+    const { error } = await supabase.from('research_repository').update(payload).eq('id', id)
+    if (error) throw error
+  },
   async updateStatus(id: string, status: ResearchItem['status']) {
     const { error } = await supabase.from('research_repository').update({ status }).eq('id', id)
+    if (error) throw error
+  },
+  async remove(id: string) {
+    const { error } = await supabase.from('research_repository').delete().eq('id', id)
     if (error) throw error
   },
 }

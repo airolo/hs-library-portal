@@ -32,6 +32,7 @@ export interface ResearchItem {
   id: string
   title: string
   abstract: string
+  location: string
   program: string
   year: number
   keywords: string[]
@@ -57,6 +58,7 @@ export interface LibraryResource {
   title: string
   resource_type: 'book' | 'journal'
   author: string
+  location: string | null
   publisher: string | null
   publication_year: number | null
   identifier_code: string | null

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
 import { announcementService } from '../../services/libraryService'
@@ -73,7 +74,25 @@ export const AnnouncementManagementPage = () => {
         <h2>Announcements and Events Management</h2>
         <p>Create, update, and delete announcement and event entries.</p>
       </header>
-
+<Card title="Published Entries">
+        <DataTable
+          headers={['Title', 'Date', 'Content', 'Actions']}
+          rows={entries.map((entry) => [
+            entry.title,
+            formatDate(entry.event_date || entry.created_at),
+            entry.content,
+            <div className="actions" key={entry.id}>
+              <ActionIconButton icon="edit" label="Edit" onClick={() => edit(entry)} />
+              <ActionIconButton
+                icon="delete"
+                label="Delete"
+                variant="danger"
+                onClick={() => remove(entry.id)}
+              />
+            </div>,
+          ])}
+        />
+      </Card>
       <Card title={editingId ? 'Update Announcement/Event' : 'Create Announcement/Event'}>
         <form className="form-grid" onSubmit={submit}>
           <label>
@@ -101,24 +120,6 @@ export const AnnouncementManagementPage = () => {
         </form>
       </Card>
 
-      <Card title="Published Entries">
-        <DataTable
-          headers={['Title', 'Date', 'Content', 'Actions']}
-          rows={entries.map((entry) => [
-            entry.title,
-            formatDate(entry.event_date || entry.created_at),
-            entry.content,
-            <div className="actions" key={entry.id}>
-              <button className="btn xs" type="button" onClick={() => edit(entry)}>
-                Edit
-              </button>
-              <button className="btn xs outline" type="button" onClick={() => remove(entry.id)}>
-                Delete
-              </button>
-            </div>,
-          ])}
-        />
-      </Card>
     </div>
   )
 }

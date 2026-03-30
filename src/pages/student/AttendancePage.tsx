@@ -54,7 +54,7 @@ export const AttendancePage = () => {
 
       <Card title="Manual Attendance">
         <p className="notice">
-          Notice: If QR code scanning for check-in/check-out is unavailable, you can manually log
+          Note: If QR code scanning for check-in/check-out is unavailable, you can manually log
           attendance through this page.
         </p>
         <div className="actions">
@@ -69,7 +69,7 @@ export const AttendancePage = () => {
 
       <Card title="Attendance History">
         <p className="notice">
-          Notice: Don't forget to log out (Time Out) after your visit to ensure accurate attendance records.
+          Note: Don't forget to log out (Time Out) after your visit to ensure accurate attendance records.
         </p>
         <DataTable
           headers={['Date', 'Time In', 'Time Out', 'Source']}

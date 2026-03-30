@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
 import { resourceService } from '../../services/libraryService'
@@ -10,6 +11,7 @@ export const AddResourcesPage = () => {
   const [title, setTitle] = useState('')
   const [resourceType, setResourceType] = useState<'book' | 'journal'>('book')
   const [author, setAuthor] = useState('')
+  const [location, setLocation] = useState('')
   const [publisher, setPublisher] = useState('')
   const [publicationYear, setPublicationYear] = useState<number | ''>('')
   const [identifierCode, setIdentifierCode] = useState('')
@@ -48,6 +50,7 @@ export const AddResourcesPage = () => {
     setTitle('')
     setResourceType('book')
     setAuthor('')
+    setLocation('')
     setPublisher('')
     setPublicationYear('')
     setIdentifierCode('')
@@ -70,6 +73,7 @@ export const AddResourcesPage = () => {
         title,
         resource_type: resourceType,
         author,
+        location,
         publisher: publisher || null,
         publication_year: publicationYear || null,
         identifier_code: identifierCode || null,
@@ -102,6 +106,7 @@ export const AddResourcesPage = () => {
     setTitle(item.title)
     setResourceType(item.resource_type)
     setAuthor(item.author)
+    setLocation(item.location || '')
     setPublisher(item.publisher || '')
     setPublicationYear(item.publication_year || '')
     setIdentifierCode(item.identifier_code || '')
@@ -120,13 +125,13 @@ export const AddResourcesPage = () => {
     <div className="page-grid">
       <header>
         <h2>Add Resources</h2>
-        <p>Add and manage books or journals, including copy availability for borrowing.</p>
+        <p>Add and manage books or journals, including OPAC location and copy availability.</p>
       </header>
 
       <Card title={editingId ? 'Edit Resource' : 'Add New Resource'}>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">Resource saved successfully!</div>}
-        <form className="form-grid" onSubmit={submit}>
+        <form className="form-grid compact-admin-form" onSubmit={submit}>
           <label>
             Title
             <input required value={title} onChange={(event) => setTitle(event.target.value)} />
@@ -144,6 +149,15 @@ export const AddResourcesPage = () => {
           <label>
             Author
             <input required value={author} onChange={(event) => setAuthor(event.target.value)} />
+          </label>
+          <label>
+            Location
+            <input
+              required
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+              placeholder="e.g., OPAC Shelf A1"
+            />
           </label>
           <label>
             Publisher
@@ -172,7 +186,7 @@ export const AddResourcesPage = () => {
             Category
             <input value={category} onChange={(event) => setCategory(event.target.value)} />
           </label>
-          <label>
+          <label className="full-row">
             Description
             <textarea
               rows={3}
@@ -200,7 +214,7 @@ export const AddResourcesPage = () => {
               onChange={(event) => setAvailableCopies(Number(event.target.value) || 0)}
             />
           </label>
-          <div className="actions">
+          <div className="actions full-row">
             <button className="btn" type="submit" disabled={isLoading}>
               {isLoading ? 'Saving...' : editingId ? 'Update Resource' : 'Add Resource'}
             </button>
@@ -215,20 +229,22 @@ export const AddResourcesPage = () => {
 
       <Card title="Catalog Inventory">
         <DataTable
-          headers={['Title', 'Type', 'Author', 'Category', 'Copies (Available/Total)', 'Actions']}
+          headers={['Title', 'Type', 'Author', 'Location', 'Category', 'Copies (Available/Total)', 'Actions']}
           rows={resources.map((item) => [
             item.title,
             item.resource_type,
             item.author,
+            item.location || '-',
             item.category || '-',
             `${item.available_copies}/${item.total_copies}`,
-            <div className="actions" key={item.id}>
-              <button className="btn xs" type="button" onClick={() => edit(item)}>
-                Edit
-              </button>
-              <button className="btn xs outline" type="button" onClick={() => remove(item.id)}>
-                Delete
-              </button>
+            <div className="actions actions-nowrap" key={item.id}>
+              <ActionIconButton icon="edit" label="Edit" onClick={() => edit(item)} />
+              <ActionIconButton
+                icon="delete"
+                label="Delete"
+                variant="danger"
+                onClick={() => remove(item.id)}
+              />
             </div>,
           ])}
         />

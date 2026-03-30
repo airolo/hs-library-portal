@@ -66,11 +66,23 @@ export const RoomReservationsPage = () => {
   return (
     <div className="page-grid">
       <header>
-        <h2>Discussion Room Reservations</h2>
+        <h2>Discussion Room Reservation</h2>
         <p>Book available discussion room slots for study and collaboration.</p>
       </header>
 
-      <Card title="Book a Time Slot">
+      <Card title="My Reservations">
+        <DataTable
+          headers={['Date', 'Room', 'Schedule', 'Status', 'Purpose']}
+          rows={reservations.map((reservation) => [
+            reservation.reservation_date,
+            reservation.discussion_rooms?.name || '-',
+            `${reservation.start_time} - ${reservation.end_time}`,
+            reservation.status,
+            reservation.purpose,
+          ])}
+        />
+      </Card>
+       <Card title="Book a Time Slot">
         <form onSubmit={createReservation} className="form-grid">
           <label>
             Room
@@ -102,19 +114,6 @@ export const RoomReservationsPage = () => {
             Submit Reservation
           </button>
         </form>
-      </Card>
-
-      <Card title="My Reservations">
-        <DataTable
-          headers={['Date', 'Room', 'Schedule', 'Status', 'Purpose']}
-          rows={reservations.map((reservation) => [
-            reservation.reservation_date,
-            reservation.discussion_rooms?.name || '-',
-            `${reservation.start_time} - ${reservation.end_time}`,
-            reservation.status,
-            reservation.purpose,
-          ])}
-        />
       </Card>
     </div>
   )

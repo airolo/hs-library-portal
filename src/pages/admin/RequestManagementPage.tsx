@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
 import { requestService } from '../../services/libraryService'
@@ -68,12 +69,17 @@ export const RequestManagementPage = () => {
             item.status,
             item.admin_notes || '-',
             <div className="actions" key={item.id}>
-              <button className="btn xs" type="button" onClick={() => updateStatus(item.id, 'approved')}>
-                Approve
-              </button>
-              <button className="btn xs outline" type="button" onClick={() => updateStatus(item.id, 'rejected')}>
-                Reject
-              </button>
+              <ActionIconButton
+                icon="approve"
+                label="Approve"
+                onClick={() => updateStatus(item.id, 'approved')}
+              />
+              <ActionIconButton
+                icon="reject"
+                label="Reject"
+                variant="outline"
+                onClick={() => updateStatus(item.id, 'rejected')}
+              />
             </div>,
           ])}
         />

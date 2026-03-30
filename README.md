@@ -67,6 +67,7 @@ cp .env.example .env
 Set:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_RESEARCH_BUCKET` (existing public storage bucket for research PDFs)
 
 3. Apply database schema:
 - Open Supabase SQL editor.
