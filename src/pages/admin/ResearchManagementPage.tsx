@@ -24,6 +24,8 @@ export const ResearchManagementPage = () => {
   const [editYear, setEditYear] = useState(0)
   const [editAbstract, setEditAbstract] = useState('')
   const [editKeywords, setEditKeywords] = useState('')
+  const [queueSearch, setQueueSearch] = useState('')
+  const [queueProgram, setQueueProgram] = useState('')
 
   const load = async () => {
     const data = await researchService.list()
@@ -75,11 +77,6 @@ export const ResearchManagementPage = () => {
     }
   }
 
-  const setStatus = async (id: string, status: ResearchItem['status']) => {
-    await researchService.updateStatus(id, status)
-    await load()
-  }
-
   const handleEdit = (item: ResearchItem) => {
     setErrorMessage('')
     setEditingItem(item)
@@ -123,11 +120,28 @@ export const ResearchManagementPage = () => {
     await load()
   }
 
+  const programOptions = Array.from(new Set(items.map((item) => item.program))).sort((a, b) =>
+    a.localeCompare(b),
+  )
+
+  const filteredItems = items.filter((item) => {
+    const normalizedSearch = queueSearch.trim().toLowerCase()
+    const matchesSearch =
+      !normalizedSearch ||
+      item.title.toLowerCase().includes(normalizedSearch) ||
+      item.author.toLowerCase().includes(normalizedSearch) ||
+      item.location.toLowerCase().includes(normalizedSearch)
+
+    const matchesProgram = !queueProgram || item.program === queueProgram
+
+    return matchesSearch && matchesProgram
+  })
+
   return (
     <div className="page-grid">
       <header>
         <h2>Research Repository Management</h2>
-        <p>Upload, review, and approve repository submissions.</p>
+        <p>Upload and manage repository submissions.</p>
       </header>
 
       <Card title="Upload Research Entry">
@@ -175,43 +189,43 @@ export const ResearchManagementPage = () => {
       </Card>
 
       <Card title="Submission Queue">
+        <div className="filters-grid" style={{ marginBottom: '0.75rem' }}>
+          <label>
+            Search
+            <input
+              value={queueSearch}
+              onChange={(event) => setQueueSearch(event.target.value)}
+              placeholder="Search title, author, location"
+            />
+          </label>
+          <label>
+            Program
+            <select value={queueProgram} onChange={(event) => setQueueProgram(event.target.value)}>
+              <option value="">All</option>
+              {programOptions.map((programOption) => (
+                <option key={programOption} value={programOption}>
+                  {programOption}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
         <DataTable
-          headers={['Title', 'Author', 'Location', 'Program', 'Year', 'Status', 'Actions']}
-          rows={items.map((item) => [
+          headers={['Title', 'Author', 'Location', 'Program', 'Year', 'Actions']}
+          rows={filteredItems.map((item) => [
             item.title,
             item.author,
             item.location,
             item.program,
             item.year,
-            item.status,
             <div className="actions actions-nowrap" key={item.id}>
-              {item.status === 'pending' && (
-                <>
-                  <ActionIconButton
-                    icon="approve"
-                    label="Approve"
-                    onClick={() => setStatus(item.id, 'approved')}
-                  />
-                  <ActionIconButton
-                    icon="reject"
-                    label="Reject"
-                    variant="outline"
-                    onClick={() => setStatus(item.id, 'rejected')}
-                  />
-                </>
-              )}
-              {item.status !== 'pending' && (
-                <>
-                  <ActionIconButton icon="edit" label="Edit" onClick={() => handleEdit(item)} />
-                  <ActionIconButton
-                    icon="delete"
-                    label="Delete"
-                    variant="danger"
-                    onClick={() => handleDelete(item.id)}
-                  />
-                </>
-              )}
-            
+              <ActionIconButton icon="edit" label="Edit" onClick={() => handleEdit(item)} />
+              <ActionIconButton
+                icon="delete"
+                label="Delete"
+                variant="danger"
+                onClick={() => handleDelete(item.id)}
+              />
             </div>,
           ])}
         />

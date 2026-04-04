@@ -4,15 +4,21 @@ create table if not exists public.library_resources (
   title text not null,
   resource_type text not null check (resource_type in ('book', 'journal')),
   author text not null,
-  publisher text,
-  publication_year int,
-  identifier_code text,
+  call_number text,
   category text,
   description text,
   total_copies int not null check (total_copies >= 1),
   available_copies int not null check (available_copies >= 0 and available_copies <= total_copies),
   created_at timestamptz not null default now()
 );
+
+alter table public.library_resources
+add column if not exists call_number text;
+
+alter table public.library_resources
+drop column if exists publisher,
+drop column if exists publication_year,
+drop column if exists identifier_code;  
 
 -- Create resource_borrow_transactions table
 create table if not exists public.resource_borrow_transactions (
@@ -79,9 +85,7 @@ insert into public.library_resources(
   title,
   resource_type,
   author,
-  publisher,
-  publication_year,
-  identifier_code,
+  call_number,
   category,
   description,
   total_copies,
@@ -92,9 +96,7 @@ values
     'Robbins and Cotran Pathologic Basis of Disease',
     'book',
     'Kumar, Abbas, Aster',
-    'Elsevier',
-    2020,
-    'ISBN 9780323531139',
+    'QZ 4 R635 2020',
     'Pathology',
     'Core pathology textbook used in medicine training.',
     6,
@@ -104,9 +106,7 @@ values
     'Harrison''s Principles of Internal Medicine',
     'book',
     'Jameson et al.',
-    'McGraw Hill',
-    2022,
-    'ISBN 9781264268504',
+    'WB 115 H322 2022',
     'Internal Medicine',
     'Comprehensive internal medicine reference.',
     5,
@@ -116,9 +116,7 @@ values
     'The Lancet',
     'journal',
     'The Lancet Editorial Team',
-    'Elsevier',
-    2026,
-    'ISSN 0140-6736',
+    'PER W1 LA787',
     'General Medicine',
     'Peer-reviewed weekly medical journal.',
     12,

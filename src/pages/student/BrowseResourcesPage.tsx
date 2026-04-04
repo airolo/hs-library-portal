@@ -10,9 +10,14 @@ export const BrowseResourcesPage = () => {
   const [selectedResource, setSelectedResource] = useState<LibraryResource | null>(null)
   const [search, setSearch] = useState('')
   const [resourceType, setResourceType] = useState<'' | 'book' | 'journal'>('')
+  const [category, setCategory] = useState<'' | 'Dentistry' | 'Nursing' | 'Medicine'>('')
 
   const load = async () => {
-    const resourceData = await resourceService.list({ query: search || undefined, resourceType })
+    const resourceData = await resourceService.list({
+      query: search || undefined,
+      resourceType,
+      category,
+    })
     setResources(resourceData)
   }
 
@@ -46,7 +51,7 @@ export const BrowseResourcesPage = () => {
       <Card title="Catalog Filters">
         <div className="filters-grid">
           <label>
-            Search title/author/category
+            Search 
             <input value={search} onChange={(event) => setSearch(event.target.value)} />
           </label>
           <label>
@@ -58,6 +63,20 @@ export const BrowseResourcesPage = () => {
               <option value="">All</option>
               <option value="book">Book</option>
               <option value="journal">Journal</option>
+            </select>
+          </label>
+          <label>
+            Category
+            <select
+              value={category}
+              onChange={(event) =>
+                setCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
+              }
+            >
+              <option value="">All</option>
+              <option value="Dentistry">Dentistry</option>
+              <option value="Nursing">Nursing</option>
+              <option value="Medicine">Medicine</option>
             </select>
           </label>
           <button className="btn" type="button" onClick={load}>
@@ -72,7 +91,7 @@ export const BrowseResourcesPage = () => {
             'Title',
             'Type',
             'Author',
-            'Location',
+            'Call Number',
             'Category',
             'Copies',
             'Action',
@@ -81,7 +100,7 @@ export const BrowseResourcesPage = () => {
             item.title,
             item.resource_type,
             item.author,
-            item.location || '-',
+            item.call_number || '-',
             item.category || '-',
             `${item.available_copies}/${item.total_copies}`,
             <button
@@ -110,19 +129,10 @@ export const BrowseResourcesPage = () => {
               <strong>Author:</strong> {selectedResource.author}
             </div>
             <div>
-              <strong>Location:</strong> {selectedResource.location || '-'}
+              <strong>Call Number:</strong> {selectedResource.call_number || '-'}
             </div>
             <div>
               <strong>Category:</strong> {selectedResource.category || '-'}
-            </div>
-            <div>
-              <strong>Publisher:</strong> {selectedResource.publisher || '-'}
-            </div>
-            <div>
-              <strong>Publication Year:</strong> {selectedResource.publication_year || '-'}
-            </div>
-            <div>
-              <strong>ISBN / ISSN:</strong> {selectedResource.identifier_code || '-'}
             </div>
             <div>
               <strong>Description:</strong>

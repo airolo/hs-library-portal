@@ -227,10 +227,32 @@ export const requestService = {
 
     if (error) throw error
   },
+  async listActiveRequestsForCurrentUser(limit = 5) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from('resource_requests')
+      .select('*')
+      .eq('student_id', user.id)
+      .in('status', ['pending', 'approved', 'rejected'])
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) throw error
+    return data as ResourceRequest[]
+  },
 }
 
 export const resourceService = {
-  async list(filters?: { query?: string; resourceType?: 'book' | 'journal' | '' }) {
+  async list(filters?: {
+    query?: string
+    resourceType?: 'book' | 'journal' | ''
+    category?: '' | 'Dentistry' | 'Nursing' | 'Medicine'
+  }) {
     let query = supabase
       .from('library_resources')
       .select('*')
@@ -240,9 +262,13 @@ export const resourceService = {
       query = query.eq('resource_type', filters.resourceType)
     }
 
+    if (filters?.category) {
+      query = query.eq('category', filters.category)
+    }
+
     if (filters?.query) {
       query = query.or(
-        `title.ilike.%${filters.query}%,author.ilike.%${filters.query}%,category.ilike.%${filters.query}%`,
+        `title.ilike.%${filters.query}%,author.ilike.%${filters.query}%,category.ilike.%${filters.query}%,call_number.ilike.%${filters.query}%`,
       )
     }
 
@@ -393,5 +419,26 @@ export const roomService = {
   async updateStatus(id: string, status: RoomReservation['status']) {
     const { error } = await supabase.from('room_reservations').update({ status }).eq('id', id)
     if (error) throw error
+  },
+  async listUpcomingReservationsForCurrentUser(limit = 5) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const today = new Date().toISOString().slice(0, 10)
+
+    const { data, error } = await supabase
+      .from('room_reservations')
+      .select('*, discussion_rooms(*)')
+      .eq('student_id', user.id)
+      .gte('reservation_date', today)
+      .order('reservation_date', { ascending: true })
+      .order('start_time', { ascending: true })
+      .limit(limit)
+
+    if (error) throw error
+    return data as RoomReservation[]
   },
 }

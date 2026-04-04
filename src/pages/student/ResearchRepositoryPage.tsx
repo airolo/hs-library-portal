@@ -79,7 +79,7 @@ export const ResearchRepositoryPage = () => {
 
       <Card title="Repository Entries">
         <DataTable
-          headers={['Title', 'Author', 'Program', 'Year', 'Location', 'Keywords', 'Actions']}
+          headers={['Title', 'Author/s', 'Program', 'Year', 'Location', 'Keywords', 'Actions']}
           rows={items.map((item) => [
             item.title,
             item.author,

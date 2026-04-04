@@ -1,0 +1,167 @@
+.activity-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.activity-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activity-item {
+  padding: 1rem;
+  background: #f8fafc;
+  border-left: 4px solid #2563eb;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: #f1f5f9;
+  transform: translateX(2px);
+}
+
+.activity-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.activity-item-header strong {
+  color: #0f172a;
+  font-size: 0.95rem;
+  flex: 1;
+  word-break: break-word;
+}
+
+.activity-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-cancelled {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.remove-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.remove-button:hover {
+  background: #fecaca;
+  color: #991b1b;
+  transform: scale(1.05);
+}
+
+.remove-button:active {
+  transform: scale(0.95);
+}
+
+.activity-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.activity-item-details p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.activity-item-details .purpose {
+  font-style: italic;
+  color: #64748b;
+}
+
+.activity-item-details small {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.empty-state {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 1.5rem 0;
+  margin: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .activity-summary {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .activity-item-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .activity-item-actions {
+    align-self: flex-start;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .status-badge {
+    flex: 1;
+  }
+}
