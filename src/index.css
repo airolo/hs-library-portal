@@ -306,6 +306,12 @@ textarea:focus {
   list-style: none;
 }
 
+.latest-activity-list {
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
 .list li {
   border: 1px solid var(--line);
   border-radius: 10px;

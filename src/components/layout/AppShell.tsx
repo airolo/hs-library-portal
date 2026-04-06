@@ -9,22 +9,21 @@ interface NavItem {
 
 const studentNav: NavItem[] = [
   { label: 'Dashboard', to: '/student' },
-  { label: 'Attendance', to: '/student/attendance' },
   { label: 'Browse Resources', to: '/student/resources' },
   { label: 'Research', to: '/student/research' },
   { label: 'Resource Requests', to: '/student/requests' },
   { label: 'Announcements', to: '/student/announcements' },
-  { label: 'Room Reservations', to: '/student/rooms' },
+  { label: 'Feedback & Issues', to: '/student/feedback' },
 ]
 
 const adminNav: NavItem[] = [
   { label: 'Admin Dashboard', to: '/admin' },
-  { label: 'Attendance Logs', to: '/admin/attendance' },
+  { label: 'Registered Students', to: '/admin/attendance' },
   { label: 'Add Resources', to: '/admin/resources' },
   { label: 'Research Management', to: '/admin/research' },
   { label: 'Request Management', to: '/admin/requests' },
   { label: 'Announcements & Events', to: '/admin/announcements' },
-  { label: 'Room Management', to: '/admin/rooms' },
+  { label: 'Feedback Management', to: '/admin/feedback' },
 ]
 
 const navByRole: Record<UserRole, NavItem[]> = {

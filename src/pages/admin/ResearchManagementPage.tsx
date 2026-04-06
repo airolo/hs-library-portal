@@ -6,6 +6,8 @@ import { Modal } from '../../components/ui/Modal'
 import { researchService } from '../../services/libraryService'
 import type { ResearchItem } from '../../types/domain'
 
+const PROGRAM_OPTIONS = ['Nursing', 'Dentistry', 'Medicine'] as const
+
 export const ResearchManagementPage = () => {
   const [items, setItems] = useState<ResearchItem[]>([])
   const [errorMessage, setErrorMessage] = useState('')
@@ -120,10 +122,6 @@ export const ResearchManagementPage = () => {
     await load()
   }
 
-  const programOptions = Array.from(new Set(items.map((item) => item.program))).sort((a, b) =>
-    a.localeCompare(b),
-  )
-
   const filteredItems = items.filter((item) => {
     const normalizedSearch = queueSearch.trim().toLowerCase()
     const matchesSearch =
@@ -166,7 +164,13 @@ export const ResearchManagementPage = () => {
           </label>
           <label>
             Program
-            <input required value={program} onChange={(event) => setProgram(event.target.value)} />
+            <select required value={program} onChange={(event) => setProgram(event.target.value)}>
+              {PROGRAM_OPTIONS.map((programOption) => (
+                <option key={programOption} value={programOption}>
+                  {programOption}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Year
@@ -202,7 +206,7 @@ export const ResearchManagementPage = () => {
             Program
             <select value={queueProgram} onChange={(event) => setQueueProgram(event.target.value)}>
               <option value="">All</option>
-              {programOptions.map((programOption) => (
+              {PROGRAM_OPTIONS.map((programOption) => (
                 <option key={programOption} value={programOption}>
                   {programOption}
                 </option>
@@ -278,7 +282,14 @@ export const ResearchManagementPage = () => {
             </label>
             <label>
               Program
-              <input required value={editProgram} onChange={(event) => setEditProgram(event.target.value)} />
+              <select required value={editProgram} onChange={(event) => setEditProgram(event.target.value)}>
+                <option value="">Select Program</option>
+                {PROGRAM_OPTIONS.map((programOption) => (
+                  <option key={programOption} value={programOption}>
+                    {programOption}
+                  </option>
+                ))}
+              </select>
             </label>
             <label>
               Year

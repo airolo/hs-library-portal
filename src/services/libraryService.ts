@@ -6,7 +6,8 @@ import type {
   ResearchItem,
   ResourceBorrowTransaction,
   ResourceRequest,
-  RoomReservation,
+  FeedbackReport,
+  Profile,
 } from '../types/domain'
 
 export const announcementService = {
@@ -68,6 +69,37 @@ export const attendanceService = {
 
     if (error) throw error
     return data as (AttendanceLog & { profiles: { full_name: string; program: string | null } })[]
+  },
+  async listRegisteredStudents() {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role, program, year_level, created_at')
+      .eq('role', 'student')
+      .order('full_name', { ascending: true })
+
+    if (error) throw error
+    return data as Profile[]
+  },
+  async updateRegisteredStudent(
+    id: string,
+    payload: Pick<Profile, 'full_name' | 'role' | 'program' | 'year_level'>,
+  ) {
+    const { error } = await supabase.from('profiles').update(payload).eq('id', id)
+
+    if (error) throw error
+  },
+  async removeRegisteredStudent(id: string) {
+    const { error } = await supabase.from('profiles').delete().eq('id', id)
+
+    if (error) throw error
+  },
+  async resetRegisteredStudentPassword(id: string, newPassword: string) {
+    const { error } = await supabase.rpc('admin_reset_user_password', {
+      target_user_id: id,
+      new_password: newPassword,
+    })
+
+    if (error) throw error
   },
   async countForCurrentUser() {
     const {
@@ -227,6 +259,10 @@ export const requestService = {
 
     if (error) throw error
   },
+  async remove(id: string) {
+    const { error } = await supabase.from('resource_requests').delete().eq('id', id)
+    if (error) throw error
+  },
   async listActiveRequestsForCurrentUser(limit = 5) {
     const {
       data: { user },
@@ -344,8 +380,8 @@ export const resourceService = {
   },
 }
 
-export const roomService = {
-  async listReservationsForCurrentUser() {
+export const feedbackService = {
+  async listForCurrentUser() {
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -353,24 +389,24 @@ export const roomService = {
     if (!user) return []
 
     const { data, error } = await supabase
-      .from('room_reservations')
-      .select('*, discussion_rooms(*)')
+      .from('feedback_reports')
+      .select('*')
       .eq('student_id', user.id)
-      .order('reservation_date', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) throw error
-    return data as RoomReservation[]
+    return data as FeedbackReport[]
   },
-  async listAllReservations() {
+  async listAll() {
     const { data, error } = await supabase
-      .from('room_reservations')
-      .select('*, discussion_rooms(*), profiles(full_name, program)')
-      .order('reservation_date', { ascending: false })
+      .from('feedback_reports')
+      .select('*, profiles(full_name, program)')
+      .order('created_at', { ascending: false })
 
     if (error) throw error
-    return data as RoomReservation[]
+    return data as FeedbackReport[]
   },
-  async countReservationsForCurrentUser() {
+  async countForCurrentUser() {
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -378,29 +414,17 @@ export const roomService = {
     if (!user) return 0
 
     const { count, error } = await supabase
-      .from('room_reservations')
+      .from('feedback_reports')
       .select('id', { count: 'exact', head: true })
       .eq('student_id', user.id)
 
     if (error) throw error
     return count ?? 0
   },
-  async listRooms() {
-    const { data, error } = await supabase
-      .from('discussion_rooms')
-      .select('*')
-      .eq('is_active', true)
-      .order('name', { ascending: true })
-
-    if (error) throw error
-    return data
-  },
-  async createReservation(payload: {
-    room_id: string
-    reservation_date: string
-    start_time: string
-    end_time: string
-    purpose: string
+  async create(payload: {
+    category: FeedbackReport['category']
+    description: string
+    priority: FeedbackReport['priority']
   }) {
     const {
       data: { user },
@@ -408,37 +432,74 @@ export const roomService = {
 
     if (!user) throw new Error('Not authenticated')
 
-    const { error } = await supabase.from('room_reservations').insert({
+    const baseInsertPayload = {
       ...payload,
       student_id: user.id,
-      status: 'pending',
-    })
+      status: 'new' as const,
+    }
+
+    const tryInsert = async () => {
+      const { error } = await supabase.from('feedback_reports').insert(baseInsertPayload)
+      return error
+    }
+
+    let error = await tryInsert()
+
+    if (error?.code === '23503') {
+      const fallbackFullName =
+        (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim()) ||
+        (user.email ? user.email.split('@')[0] : 'Student User')
+
+      const { error: profileError } = await supabase.from('profiles').upsert(
+        {
+          id: user.id,
+          email: user.email || `${user.id}@no-email.local`,
+          full_name: fallbackFullName,
+          role: 'student',
+        },
+        { onConflict: 'id' },
+      )
+
+      if (!profileError) {
+        error = await tryInsert()
+      }
+    }
+
+    if (error) throw new Error(error.message)
+  },
+  async updateStatus(
+    id: string,
+    status: FeedbackReport['status'],
+    adminResponse?: string,
+  ) {
+    const { error } = await supabase
+      .from('feedback_reports')
+      .update({ status, admin_response: adminResponse ?? null, updated_at: new Date().toISOString() })
+      .eq('id', id)
 
     if (error) throw error
   },
-  async updateStatus(id: string, status: RoomReservation['status']) {
-    const { error } = await supabase.from('room_reservations').update({ status }).eq('id', id)
+  async remove(id: string) {
+    const { error } = await supabase.from('feedback_reports').delete().eq('id', id)
+
     if (error) throw error
   },
-  async listUpcomingReservationsForCurrentUser(limit = 5) {
+  async listOpenForCurrentUser(limit = 5) {
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
     if (!user) return []
 
-    const today = new Date().toISOString().slice(0, 10)
-
     const { data, error } = await supabase
-      .from('room_reservations')
-      .select('*, discussion_rooms(*)')
+      .from('feedback_reports')
+      .select('*')
       .eq('student_id', user.id)
-      .gte('reservation_date', today)
-      .order('reservation_date', { ascending: true })
-      .order('start_time', { ascending: true })
+      .in('status', ['new', 'in_review'])
+      .order('created_at', { ascending: false })
       .limit(limit)
 
     if (error) throw error
-    return data as RoomReservation[]
+    return data as FeedbackReport[]
   },
 }

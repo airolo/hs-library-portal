@@ -12,8 +12,7 @@ export const AddResourcesPage = () => {
   const [resourceType, setResourceType] = useState<'book' | 'journal'>('book')
   const [author, setAuthor] = useState('')
   const [callNumber, setCallNumber] = useState('')
-  const [category, setCategory] = useState('')
-  const [description, setDescription] = useState('')
+  const [category, setCategory] = useState<'' | 'Dentistry' | 'Nursing' | 'Medicine'>('')
   const [totalCopies, setTotalCopies] = useState(1)
   const [availableCopies, setAvailableCopies] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -24,8 +23,7 @@ export const AddResourcesPage = () => {
   const [editResourceType, setEditResourceType] = useState<'book' | 'journal'>('book')
   const [editAuthor, setEditAuthor] = useState('')
   const [editCallNumber, setEditCallNumber] = useState('')
-  const [editCategory, setEditCategory] = useState('')
-  const [editDescription, setEditDescription] = useState('')
+  const [editCategory, setEditCategory] = useState<'' | 'Dentistry' | 'Nursing' | 'Medicine'>('')
   const [editTotalCopies, setEditTotalCopies] = useState(1)
   const [editAvailableCopies, setEditAvailableCopies] = useState(1)
   const [editIsLoading, setEditIsLoading] = useState(false)
@@ -62,7 +60,6 @@ export const AddResourcesPage = () => {
     setAuthor('')
     setCallNumber('')
     setCategory('')
-    setDescription('')
     setTotalCopies(1)
     setAvailableCopies(1)
     setError(null)
@@ -82,7 +79,7 @@ export const AddResourcesPage = () => {
         author,
         call_number: callNumber || null,
         category: category || null,
-        description: description || null,
+        description: null,
         total_copies: totalCopies,
         available_copies: Math.min(availableCopies, totalCopies),
       }
@@ -108,8 +105,7 @@ export const AddResourcesPage = () => {
     setEditResourceType(item.resource_type)
     setEditAuthor(item.author)
     setEditCallNumber(item.call_number || '')
-    setEditCategory(item.category || '')
-    setEditDescription(item.description || '')
+    setEditCategory((item.category as '' | 'Dentistry' | 'Nursing' | 'Medicine') || '')
     setEditTotalCopies(item.total_copies)
     setEditAvailableCopies(item.available_copies)
   }
@@ -138,7 +134,6 @@ export const AddResourcesPage = () => {
         author: editAuthor,
         call_number: editCallNumber || null,
         category: editCategory || null,
-        description: editDescription || null,
         total_copies: editTotalCopies,
         available_copies: Math.min(editAvailableCopies, editTotalCopies),
       }
@@ -209,15 +204,16 @@ export const AddResourcesPage = () => {
           </label>
           <label>
             Category
-            <input value={category} onChange={(event) => setCategory(event.target.value)} />
-          </label>
-          <label className="full-row">
-            Description
-            <textarea
-              rows={3}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
+            <select
+              value={category}
+              onChange={(event) =>
+                setCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
+              }
+            >
+              <option value="Nursing">Nursing</option>
+              <option value="Medicine">Medicine</option>
+              <option value="Dentistry">Dentistry</option>
+            </select>
           </label>
           <label>
             Total Copies
@@ -363,15 +359,17 @@ export const AddResourcesPage = () => {
             </label>
             <label>
               Category
-              <input value={editCategory} onChange={(event) => setEditCategory(event.target.value)} />
-            </label>
-            <label>
-              Description
-              <textarea
-                rows={3}
-                value={editDescription}
-                onChange={(event) => setEditDescription(event.target.value)}
-              />
+              <select
+                value={editCategory}
+                onChange={(event) =>
+                  setEditCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
+                }
+              >
+                <option value="">Select category</option>
+                <option value="Nursing">Nursing</option>
+                <option value="Medicine">Medicine</option>
+                <option value="Dentistry">Dentistry</option>
+              </select>
             </label>
             <label>
               Total Copies

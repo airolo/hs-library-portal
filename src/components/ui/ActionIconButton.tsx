@@ -1,4 +1,4 @@
-type ActionIcon = 'edit' | 'delete' | 'approve' | 'reject'
+type ActionIcon = 'edit' | 'delete' | 'approve' | 'reject' | 'password'
 
 type ActionIconButtonProps = {
   icon: ActionIcon
@@ -31,6 +31,14 @@ const Icon = ({ icon }: { icon: ActionIcon }) => {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M20.29 5.71a1 1 0 0 0-1.42 0L9 15.59l-3.88-3.88a1 1 0 1 0-1.41 1.41l4.59 4.59a1 1 0 0 0 1.41 0l10.58-10.58a1 1 0 0 0 0-1.42z" />
+      </svg>
+    )
+  }
+
+  if (icon === 'password') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm2 11a2 2 0 0 1-1-3.73V12a1 1 0 0 1 2 0v1.27A2 2 0 0 1 12 17z" />
       </svg>
     )
   }

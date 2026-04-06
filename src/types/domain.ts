@@ -79,24 +79,15 @@ export interface ResourceBorrowTransaction {
   profiles?: Pick<Profile, 'full_name' | 'program'>
 }
 
-export interface DiscussionRoom {
+export interface FeedbackReport {
   id: string
-  name: string
-  capacity: number
-  location: string
-  is_active: boolean
-}
-
-export interface RoomReservation {
-  id: string
-  room_id: string
   student_id: string
-  reservation_date: string
-  start_time: string
-  end_time: string
-  purpose: string
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  category: 'book_request' | 'journal_access' | 'repository_issue' | 'general_feedback' | 'bug_report'
+  description: string
+  priority: 'low' | 'medium' | 'high'
+  status: 'new' | 'in_review' | 'resolved' | 'closed'
+  admin_response: string | null
   created_at: string
-  discussion_rooms?: DiscussionRoom
+  updated_at: string
   profiles?: Pick<Profile, 'full_name' | 'program'>
 }

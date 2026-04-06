@@ -8,14 +8,13 @@ import { AttendanceManagementPage } from '../pages/admin/AttendanceManagementPag
 import { ResearchManagementPage } from '../pages/admin/ResearchManagementPage'
 import { RequestManagementPage } from '../pages/admin/RequestManagementPage'
 import { AnnouncementManagementPage } from '../pages/admin/AnnouncementManagementPage'
-import { RoomManagementPage } from '../pages/admin/RoomManagementPage'
+import { FeedbackManagementPage } from '../pages/admin/RoomManagementPage'
 import { StudentDashboardPage } from '../pages/student/StudentDashboardPage'
-import { AttendancePage } from '../pages/student/AttendancePage'
 import { BrowseResourcesPage } from '../pages/student/BrowseResourcesPage'
 import { ResearchRepositoryPage } from '../pages/student/ResearchRepositoryPage'
 import { ResourceRequestsPage } from '../pages/student/ResourceRequestsPage'
 import { AnnouncementsPage } from '../pages/student/AnnouncementsPage'
-import { RoomReservationsPage } from '../pages/student/RoomReservationsPage'
+import { FeedbackReportsPage } from '../pages/student/RoomReservationsPage'
 import { AddResourcesPage } from '../pages/admin/AddResourcesPage'
 
 export const AppRouter = () => {
@@ -36,14 +35,6 @@ export const AppRouter = () => {
           element={
             <ProtectedRoute roles={['student']}>
               <StudentDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/attendance"
-          element={
-            <ProtectedRoute roles={['student']}>
-              <AttendancePage />
             </ProtectedRoute>
           }
         />
@@ -80,12 +71,16 @@ export const AppRouter = () => {
           }
         />
         <Route
-          path="/student/rooms"
+          path="/student/feedback"
           element={
             <ProtectedRoute roles={['student']}>
-              <RoomReservationsPage />
+              <FeedbackReportsPage />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/student/rooms"
+          element={<Navigate to="/student/feedback" replace />}
         />
 
         <Route
@@ -137,12 +132,16 @@ export const AppRouter = () => {
           }
         />
         <Route
-          path="/admin/rooms"
+          path="/admin/feedback"
           element={
             <ProtectedRoute roles={['admin']}>
-              <RoomManagementPage />
+              <FeedbackManagementPage />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/admin/rooms"
+          element={<Navigate to="/admin/feedback" replace />}
         />
       </Route>
 

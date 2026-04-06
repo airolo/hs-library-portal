@@ -1,4 +1,5 @@
 create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -90,31 +91,28 @@ create table if not exists public.resource_borrow_transactions (
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.discussion_rooms (
+drop table if exists public.room_reservations cascade;
+drop table if exists public.discussion_rooms cascade;
+
+create table if not exists public.feedback_reports (
   id uuid primary key default uuid_generate_v4(),
-  name text not null unique,
-  capacity int not null default 6,
-  location text not null,
-  is_active boolean not null default true
+  student_id uuid not null references public.profiles(id) on delete cascade,
+  category text not null check (category in ('book_request', 'journal_access', 'repository_issue', 'general_feedback', 'bug_report')),
+  description text not null,
+  priority text not null default 'medium' check (priority in ('low', 'medium', 'high')),
+  status text not null default 'new' check (status in ('new', 'in_review', 'resolved', 'closed')),
+  admin_response text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
-create table if not exists public.room_reservations (
-  id uuid primary key default uuid_generate_v4(),
-  room_id uuid not null references public.discussion_rooms(id) on delete cascade,
-  student_id uuid not null references public.profiles(id) on delete cascade,
-  reservation_date date not null,
-  start_time time not null,
-  end_time time not null,
-  purpose text not null,
-  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'cancelled')),
-  created_at timestamptz not null default now(),
-  check (end_time > start_time)
-);
+alter table public.feedback_reports
+drop column if exists subject;
 
 create index if not exists idx_research_program_year on public.research_repository(program, year);
 create index if not exists idx_research_keywords on public.research_repository using gin (keywords);
 create index if not exists idx_attendance_student_date on public.attendance_logs(student_id, date desc);
-create index if not exists idx_reservation_schedule on public.room_reservations(room_id, reservation_date, start_time);
+create index if not exists idx_feedback_student_status on public.feedback_reports(student_id, status, created_at desc);
 create index if not exists idx_library_resources_search on public.library_resources(title, author, category);
 create index if not exists idx_borrow_tx_student_status on public.resource_borrow_transactions(student_id, status);
 
@@ -125,8 +123,7 @@ alter table public.research_repository enable row level security;
 alter table public.resource_requests enable row level security;
 alter table public.library_resources enable row level security;
 alter table public.resource_borrow_transactions enable row level security;
-alter table public.discussion_rooms enable row level security;
-alter table public.room_reservations enable row level security;
+alter table public.feedback_reports enable row level security;
 
 create or replace function public.is_admin(uid uuid)
 returns boolean
@@ -138,6 +135,48 @@ as $$
   );
 $$;
 
+create or replace function public.admin_reset_user_password(target_user_id uuid, new_password text)
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  if not public.is_admin(auth.uid()) then
+    raise exception 'Only admins can reset passwords';
+  end if;
+
+  if length(trim(coalesce(new_password, ''))) < 8 then
+    raise exception 'Password must be at least 8 characters long';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles p
+    where p.id = target_user_id
+      and p.role = 'student'
+  ) then
+    raise exception 'Target student account not found';
+  end if;
+
+  update auth.users
+  set encrypted_password = crypt(new_password, gen_salt('bf')),
+      updated_at = now()
+  where id = target_user_id;
+
+  if not found then
+    raise exception 'Authentication account not found';
+  end if;
+end;
+$$;
+
+revoke all on function public.admin_reset_user_password(uuid, text) from public;
+grant execute on function public.admin_reset_user_password(uuid, text) to authenticated;
+
 create policy "Users can read own profile"
 on public.profiles
 for select
@@ -147,6 +186,19 @@ create policy "Users can update own profile"
 on public.profiles
 for update
 using (auth.uid() = id);
+
+create policy "Profiles managed by admins"
+on public.profiles
+for update
+to authenticated
+using (public.is_admin(auth.uid()))
+with check (public.is_admin(auth.uid()));
+
+create policy "Profiles deletable by admins"
+on public.profiles
+for delete
+to authenticated
+using (public.is_admin(auth.uid()));
 
 create policy "Allow profile insert for authenticated"
 on public.profiles
@@ -215,6 +267,12 @@ for update
 to authenticated
 using (public.is_admin(auth.uid()));
 
+create policy "Requests delete by admins"
+on public.resource_requests
+for delete
+to authenticated
+using (public.is_admin(auth.uid()));
+
 create policy "Library resources readable by authenticated"
 on public.library_resources
 for select
@@ -246,41 +304,29 @@ for update
 to authenticated
 using (public.is_admin(auth.uid()));
 
-create policy "Rooms visible to authenticated"
-on public.discussion_rooms
-for select
-to authenticated
-using (true);
-
-create policy "Rooms managed by admins"
-on public.discussion_rooms
-for all
-to authenticated
-using (public.is_admin(auth.uid()))
-with check (public.is_admin(auth.uid()));
-
-create policy "Students can read own reservations"
-on public.room_reservations
+create policy "Students can read own feedback reports"
+on public.feedback_reports
 for select
 to authenticated
 using (student_id = auth.uid() or public.is_admin(auth.uid()));
 
-create policy "Students can insert own reservations"
-on public.room_reservations
+create policy "Students can insert own feedback reports"
+on public.feedback_reports
 for insert
 to authenticated
 with check (student_id = auth.uid());
 
-create policy "Reservations managed by admins"
-on public.room_reservations
+create policy "Feedback reports managed by admins"
+on public.feedback_reports
 for update
 to authenticated
 using (public.is_admin(auth.uid()));
 
-insert into public.discussion_rooms(name, capacity, location)
-values
-  ('Office of the Librarian / Discussion Room', 6, 'Main Floor')
-on conflict (name) do nothing;
+create policy "Feedback reports deletable by admins"
+on public.feedback_reports
+for delete
+to authenticated
+using (public.is_admin(auth.uid()));
 
 insert into public.library_resources(
   title,

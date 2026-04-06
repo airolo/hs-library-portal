@@ -135,10 +135,6 @@ export const BrowseResourcesPage = () => {
               <strong>Category:</strong> {selectedResource.category || '-'}
             </div>
             <div>
-              <strong>Description:</strong>
-              <p style={{ marginTop: '0.5rem' }}>{selectedResource.description || 'No description available.'}</p>
-            </div>
-            <div>
               <strong>Copies:</strong> {selectedResource.available_copies}/{selectedResource.total_copies}
             </div>
           </div>
