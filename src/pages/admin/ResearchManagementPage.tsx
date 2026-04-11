@@ -6,28 +6,48 @@ import { Modal } from '../../components/ui/Modal'
 import { researchService } from '../../services/libraryService'
 import type { ResearchItem } from '../../types/domain'
 
-const PROGRAM_OPTIONS = ['Nursing', 'Dentistry', 'Medicine'] as const
+const DEFAULT_PROGRAM = 'Nursing'
+const DEFAULT_LOCATION = 'Unassigned shelf'
+const DEFAULT_ABSTRACT = 'No abstract provided.'
+
+const renderAuthorVertical = (author: string) => {
+  const commaSeparatedAuthors = author
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+
+  const lines =
+    commaSeparatedAuthors.length > 1
+      ? commaSeparatedAuthors
+      : (() => {
+          const words = author.trim().split(/\s+/).filter(Boolean)
+          if (words.length <= 2) return [author]
+          const splitAt = Math.ceil(words.length / 2)
+          return [words.slice(0, splitAt).join(' '), words.slice(splitAt).join(' ')]
+        })()
+
+  return (
+    <span className="author-wrap">
+      {lines.map((line, index) => (
+        <span key={`${line}-${index}`}>{line}</span>
+      ))}
+    </span>
+  )
+}
 
 export const ResearchManagementPage = () => {
   const [items, setItems] = useState<ResearchItem[]>([])
   const [errorMessage, setErrorMessage] = useState('')
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
-  const [location, setLocation] = useState('')
-  const [program, setProgram] = useState('')
   const [year, setYear] = useState(new Date().getFullYear())
-  const [abstract, setAbstract] = useState('')
-  const [keywords, setKeywords] = useState('')
   const [editingItem, setEditingItem] = useState<ResearchItem | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editAuthor, setEditAuthor] = useState('')
-  const [editLocation, setEditLocation] = useState('')
-  const [editProgram, setEditProgram] = useState('')
   const [editYear, setEditYear] = useState(0)
-  const [editAbstract, setEditAbstract] = useState('')
-  const [editKeywords, setEditKeywords] = useState('')
+  const [deletingItem, setDeletingItem] = useState<ResearchItem | null>(null)
+  const [deleteIsLoading, setDeleteIsLoading] = useState(false)
   const [queueSearch, setQueueSearch] = useState('')
-  const [queueProgram, setQueueProgram] = useState('')
 
   const load = async () => {
     const data = await researchService.list()
@@ -59,20 +79,16 @@ export const ResearchManagementPage = () => {
       await researchService.create({
         title,
         author,
-        location,
-        program,
+        location: DEFAULT_LOCATION,
+        program: DEFAULT_PROGRAM,
         year,
-        abstract,
-        keywords: keywords.split(',').map((keyword) => keyword.trim()).filter(Boolean),
-        status: 'pending',
+        abstract: DEFAULT_ABSTRACT,
+        keywords: [],
+        status: 'approved',
         file_url: null,
       })
       setTitle('')
       setAuthor('')
-      setLocation('')
-      setProgram('')
-      setAbstract('')
-      setKeywords('')
       await load()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to save research entry.')
@@ -84,11 +100,7 @@ export const ResearchManagementPage = () => {
     setEditingItem(item)
     setEditTitle(item.title)
     setEditAuthor(item.author)
-    setEditLocation(item.location)
-    setEditProgram(item.program)
     setEditYear(item.year)
-    setEditAbstract(item.abstract)
-    setEditKeywords(item.keywords.join(', '))
   }
 
   const handleSaveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -101,11 +113,7 @@ export const ResearchManagementPage = () => {
       await researchService.update(editingItem.id, {
         title: editTitle,
         author: editAuthor,
-        location: editLocation,
-        program: editProgram,
         year: editYear,
-        abstract: editAbstract,
-        keywords: editKeywords.split(',').map((keyword) => keyword.trim()).filter(Boolean),
       })
       setEditingItem(null)
       await load()
@@ -114,12 +122,32 @@ export const ResearchManagementPage = () => {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this research entry?')) {
+  const openDeleteModal = (item: ResearchItem) => {
+    setDeletingItem(item)
+  }
+
+  const closeDeleteModal = () => {
+    if (deleteIsLoading) {
       return
     }
-    await researchService.remove(id)
-    await load()
+
+    setDeletingItem(null)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingItem) {
+      return
+    }
+
+    setDeleteIsLoading(true)
+
+    try {
+      await researchService.remove(deletingItem.id)
+      setDeletingItem(null)
+      await load()
+    } finally {
+      setDeleteIsLoading(false)
+    }
   }
 
   const filteredItems = items.filter((item) => {
@@ -128,11 +156,9 @@ export const ResearchManagementPage = () => {
       !normalizedSearch ||
       item.title.toLowerCase().includes(normalizedSearch) ||
       item.author.toLowerCase().includes(normalizedSearch) ||
-      item.location.toLowerCase().includes(normalizedSearch)
+      String(item.year).includes(normalizedSearch)
 
-    const matchesProgram = !queueProgram || item.program === queueProgram
-
-    return matchesSearch && matchesProgram
+    return matchesSearch
   })
 
   return (
@@ -154,35 +180,8 @@ export const ResearchManagementPage = () => {
             <input required value={author} onChange={(event) => setAuthor(event.target.value)} />
           </label>
           <label>
-            Location (Research Collection Shelf)
-            <input
-              required
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              placeholder="e.g., Shelf B2 - Thesis Section"
-            />
-          </label>
-          <label>
-            Program
-            <select required value={program} onChange={(event) => setProgram(event.target.value)}>
-              {PROGRAM_OPTIONS.map((programOption) => (
-                <option key={programOption} value={programOption}>
-                  {programOption}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
             Year
             <input type="number" required value={year} onChange={(event) => setYear(Number(event.target.value))} />
-          </label>
-          <label className="full-row">
-            Abstract
-            <textarea required rows={3} value={abstract} onChange={(event) => setAbstract(event.target.value)} />
-          </label>
-          <label className="full-row">
-            Keywords (comma-separated)
-            <input value={keywords} onChange={(event) => setKeywords(event.target.value)} />
           </label>
           <div className="actions full-row">
             <button className="btn" type="submit">
@@ -192,47 +191,36 @@ export const ResearchManagementPage = () => {
         </form>
       </Card>
 
-      <Card title="Submission Queue">
+      <Card title="Research Catalog">
         <div className="filters-grid" style={{ marginBottom: '0.75rem' }}>
           <label>
             Search
             <input
               value={queueSearch}
               onChange={(event) => setQueueSearch(event.target.value)}
-              placeholder="Search title, author, location"
+              placeholder="Search title, author, year"
             />
           </label>
-          <label>
-            Program
-            <select value={queueProgram} onChange={(event) => setQueueProgram(event.target.value)}>
-              <option value="">All</option>
-              {PROGRAM_OPTIONS.map((programOption) => (
-                <option key={programOption} value={programOption}>
-                  {programOption}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
-        <DataTable
-          headers={['Title', 'Author', 'Location', 'Program', 'Year', 'Actions']}
-          rows={filteredItems.map((item) => [
-            item.title,
-            item.author,
-            item.location,
-            item.program,
-            item.year,
-            <div className="actions actions-nowrap" key={item.id}>
-              <ActionIconButton icon="edit" label="Edit" onClick={() => handleEdit(item)} />
-              <ActionIconButton
-                icon="delete"
-                label="Delete"
-                variant="danger"
-                onClick={() => handleDelete(item.id)}
-              />
-            </div>,
-          ])}
-        />
+        <div className="table-scroll-y">
+          <DataTable
+            headers={['Title', 'Author/s', 'Year', 'Actions']}
+            rows={filteredItems.map((item) => [
+              item.title,
+              renderAuthorVertical(item.author),
+              item.year,
+              <div className="actions actions-nowrap" key={item.id}>
+                <ActionIconButton icon="edit" label="Edit" onClick={() => handleEdit(item)} />
+                <ActionIconButton
+                  icon="delete"
+                  label="Delete"
+                  variant="danger"
+                  onClick={() => openDeleteModal(item)}
+                />
+              </div>,
+            ])}
+          />
+        </div>
       </Card>
 
       <Modal
@@ -268,43 +256,35 @@ export const ResearchManagementPage = () => {
               <input required value={editTitle} onChange={(event) => setEditTitle(event.target.value)} />
             </label>
             <label>
-              Author
+              Author/s
               <input required value={editAuthor} onChange={(event) => setEditAuthor(event.target.value)} />
-            </label>
-            <label>
-              Location (Research Collection Shelf)
-              <input
-                required
-                value={editLocation}
-                onChange={(event) => setEditLocation(event.target.value)}
-                placeholder="e.g., Shelf B2 - Thesis Section"
-              />
-            </label>
-            <label>
-              Program
-              <select required value={editProgram} onChange={(event) => setEditProgram(event.target.value)}>
-                <option value="">Select Program</option>
-                {PROGRAM_OPTIONS.map((programOption) => (
-                  <option key={programOption} value={programOption}>
-                    {programOption}
-                  </option>
-                ))}
-              </select>
             </label>
             <label>
               Year
               <input type="number" required value={editYear} onChange={(event) => setEditYear(Number(event.target.value))} />
             </label>
-            <label>
-              Abstract
-              <textarea required rows={3} value={editAbstract} onChange={(event) => setEditAbstract(event.target.value)} />
-            </label>
-            <label>
-              Keywords (comma-separated)
-              <input value={editKeywords} onChange={(event) => setEditKeywords(event.target.value)} />
-            </label>
           </form>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={!!deletingItem}
+        title="Delete Research Entry"
+        onClose={closeDeleteModal}
+        footer={
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button type="button" className="btn outline" onClick={closeDeleteModal} disabled={deleteIsLoading}>
+              Cancel
+            </button>
+            <button type="button" className="btn" onClick={confirmDelete} disabled={deleteIsLoading}>
+              {deleteIsLoading ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        }
+      >
+        <p>
+          Are you sure you want to delete <strong>{deletingItem?.title || 'this research entry'}</strong>?
+        </p>
       </Modal>
     </div>
   )

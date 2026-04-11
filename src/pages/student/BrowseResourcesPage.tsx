@@ -5,6 +5,25 @@ import { Modal } from '../../components/ui/Modal'
 import { resourceService } from '../../services/libraryService'
 import type { LibraryResource } from '../../types/domain'
 
+const renderAuthorCell = (author: string) => {
+  const words = author.trim().split(/\s+/)
+
+  if (words.length <= 3) {
+    return <span className="author-wrap">{author || '-'}</span>
+  }
+
+  const splitAt = Math.ceil(words.length / 2)
+  const lineOne = words.slice(0, splitAt).join(' ')
+  const lineTwo = words.slice(splitAt).join(' ')
+
+  return (
+    <span className="author-wrap">
+      <span>{lineOne}</span>
+      <span>{lineTwo}</span>
+    </span>
+  )
+}
+
 export const BrowseResourcesPage = () => {
   const [resources, setResources] = useState<LibraryResource[]>([])
   const [selectedResource, setSelectedResource] = useState<LibraryResource | null>(null)
@@ -86,33 +105,35 @@ export const BrowseResourcesPage = () => {
       </Card>
 
       <Card title="Available Catalog">
-        <DataTable
-          headers={[
-            'Title',
-            'Type',
-            'Author',
-            'Call Number',
-            'Category',
-            'Copies',
-            'Action',
-          ]}
-          rows={resources.map((item) => [
-            item.title,
-            item.resource_type,
-            item.author,
-            item.call_number || '-',
-            item.category || '-',
-            `${item.available_copies}/${item.total_copies}`,
-            <button
-              key={item.id}
-              type="button"
-              className="btn xs"
-              onClick={() => setSelectedResource(item)}
-            >
-              View
-            </button>,
-          ])}
-        />
+        <div className="table-scroll-y">
+          <DataTable
+            headers={[
+              'Title',
+              'Type',
+              'Author',
+              'Call Number',
+              'Category',
+              'Copies',
+              'Action',
+            ]}
+            rows={resources.map((item) => [
+              item.title,
+              item.resource_type,
+              renderAuthorCell(item.author),
+              item.call_number || '-',
+              item.category || '-',
+              `${item.available_copies}/${item.total_copies}`,
+              <button
+                key={item.id}
+                type="button"
+                className="btn xs"
+                onClick={() => setSelectedResource(item)}
+              >
+                View
+              </button>,
+            ])}
+          />
+        </div>
       </Card>
 
       <Modal

@@ -13,13 +13,24 @@ export const RegisterPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const programOptions = ['Nursing', 'Dentistry', 'Medicine']
+  const yearLevelOptions = [1, 2, 3, 4]
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
     setError(null)
 
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (!normalizedEmail.endsWith('@bicol-u.edu.ph')) {
+      setError('Use your official school email account ending in @bicol-u.edu.ph.')
+      setLoading(false)
+      return
+    }
+
     const result = await signUp({
-      email,
+      email: normalizedEmail,
       password,
       fullName,
       program,
@@ -54,18 +65,28 @@ export const RegisterPage = () => {
           </label>
           <label>
             Program
-            <input required value={program} onChange={(event) => setProgram(event.target.value)} />
+            <select required value={program} onChange={(event) => setProgram(event.target.value)}>
+              <option value="">Select Program</option>
+              {programOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Year Level
-            <input
-              type="number"
-              min={1}
-              max={10}
+            <select
               required
-              value={yearLevel}
+              value={String(yearLevel)}
               onChange={(event) => setYearLevel(Number(event.target.value))}
-            />
+            >
+              {yearLevelOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Email
@@ -75,6 +96,7 @@ export const RegisterPage = () => {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
+            <small>Use your school account only: @bicol-u.edu.ph</small>
           </label>
           <label>
             Password

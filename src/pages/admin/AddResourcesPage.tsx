@@ -76,7 +76,7 @@ export const AddResourcesPage = () => {
       const payload = {
         title,
         resource_type: resourceType,
-        author,
+        author: author.trim() || '',
         call_number: callNumber || null,
         category: category || null,
         description: null,
@@ -131,7 +131,7 @@ export const AddResourcesPage = () => {
       const payload = {
         title: editTitle,
         resource_type: editResourceType,
-        author: editAuthor,
+        author: editAuthor.trim() || '',
         call_number: editCallNumber || null,
         category: editCategory || null,
         total_copies: editTotalCopies,
@@ -196,7 +196,7 @@ export const AddResourcesPage = () => {
           </label>
           <label>
             Author
-            <input required value={author} onChange={(event) => setAuthor(event.target.value)} />
+            <input value={author} onChange={(event) => setAuthor(event.target.value)} />
           </label>
           <label>
             Call Number
@@ -210,6 +210,7 @@ export const AddResourcesPage = () => {
                 setCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
               }
             >
+              <option value="">Select a category</option>
               <option value="Nursing">Nursing</option>
               <option value="Medicine">Medicine</option>
               <option value="Dentistry">Dentistry</option>
@@ -279,26 +280,28 @@ export const AddResourcesPage = () => {
             </select>
           </label>
         </div>
-        <DataTable
-          headers={['Title', 'Type', 'Author', 'Call Number', 'Category', 'Copies', 'Actions']}
-          rows={filteredResources.map((item) => [
-            item.title,
-            item.resource_type,
-            item.author,
-            item.call_number || '-',
-            item.category || '-',
-            `${item.available_copies}/${item.total_copies}`,
-            <div className="actions actions-nowrap" key={item.id}>
-              <ActionIconButton icon="edit" label="Edit" onClick={() => openEditModal(item)} />
-              <ActionIconButton
-                icon="delete"
-                label="Delete"
-                variant="danger"
-                onClick={() => remove(item.id)}
-              />
-            </div>,
-          ])}
-        />
+        <div className="table-scroll-y">
+          <DataTable
+            headers={['Title', 'Type', 'Author', 'Call Number', 'Category', 'Copies', 'Actions']}
+            rows={filteredResources.map((item) => [
+              item.title,
+              item.resource_type,
+              item.author,
+              item.call_number || '-',
+              item.category || '-',
+              `${item.available_copies}/${item.total_copies}`,
+              <div className="actions actions-nowrap" key={item.id}>
+                <ActionIconButton icon="edit" label="Edit" onClick={() => openEditModal(item)} />
+                <ActionIconButton
+                  icon="delete"
+                  label="Delete"
+                  variant="danger"
+                  onClick={() => remove(item.id)}
+                />
+              </div>,
+            ])}
+          />
+        </div>
       </Card>
 
       <Modal
@@ -348,7 +351,7 @@ export const AddResourcesPage = () => {
             </label>
             <label>
               Author
-              <input required value={editAuthor} onChange={(event) => setEditAuthor(event.target.value)} />
+              <input value={editAuthor} onChange={(event) => setEditAuthor(event.target.value)} />
             </label>
             <label>
               Call Number

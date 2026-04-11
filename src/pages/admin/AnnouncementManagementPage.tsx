@@ -155,7 +155,7 @@ export const AnnouncementManagementPage = () => {
             <input required value={title} onChange={(event) => setTitle(event.target.value)} />
           </label>
           <label>
-            Event Date
+             Date
             <input type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} />
           </label>
           <label>

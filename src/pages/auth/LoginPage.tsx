@@ -53,7 +53,8 @@ export const LoginPage = () => {
     <div className="auth-page">
       <section className="auth-card">
         <h1>Health Sciences Library Portal</h1>
-        <p>College of Medicine</p>
+        <p><b>College of Medicine</b></p>
+        <p>Note: This is a backup system in case <b>OPAC</b> is unavailable</p>
 
         {location.state?.message ? <p className="success-text">{location.state.message}</p> : null}
         {error ? <p className="error-text">{error}</p> : null}

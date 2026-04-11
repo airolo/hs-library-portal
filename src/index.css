@@ -359,6 +359,21 @@ textarea:focus {
   overflow-x: auto;
 }
 
+.table-scroll-y {
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.author-wrap {
+  display: inline-grid;
+  gap: 0.1rem;
+  max-width: 220px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
