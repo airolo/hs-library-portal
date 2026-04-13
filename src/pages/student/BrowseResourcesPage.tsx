@@ -114,7 +114,7 @@ export const BrowseResourcesPage = () => {
               'Call Number',
               'Category',
               'Copies',
-              'Action',
+              
             ]}
             rows={resources.map((item) => [
               item.title,
@@ -123,14 +123,7 @@ export const BrowseResourcesPage = () => {
               item.call_number || '-',
               item.category || '-',
               `${item.available_copies}/${item.total_copies}`,
-              <button
-                key={item.id}
-                type="button"
-                className="btn xs"
-                onClick={() => setSelectedResource(item)}
-              >
-                View
-              </button>,
+             
             ])}
           />
         </div>

@@ -107,18 +107,6 @@ export const FeedbackReportsPage = () => {
         <p>Submit concerns and suggestions related to books, journals, and the research repository.</p>
       </header>
 
-      <Card title="My Reports">
-        <DataTable
-          headers={['Date', 'Category', 'Priority', 'Status', 'Admin Response']}
-          rows={reports.map((report) => [
-            new Date(report.created_at).toLocaleDateString(),
-            getCategoryLabel(report.category),
-            getPriorityLabel(report.priority),
-            getStatusLabel(report.status),
-            report.admin_response || '-',
-          ])}
-        />
-      </Card>
 
       <Card title="Submit Feedback or Issue">
         <form onSubmit={createReport} className="form-grid">
@@ -150,6 +138,21 @@ export const FeedbackReportsPage = () => {
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </button>
         </form>
+      </Card>
+
+      <Card title="My Reports">
+        <div className="table-scroll-y">
+          <DataTable
+            headers={['Date', 'Category', 'Priority', 'Status', 'Admin Response']}
+            rows={reports.map((report) => [
+              new Date(report.created_at).toLocaleDateString(),
+              getCategoryLabel(report.category),
+              getPriorityLabel(report.priority),
+              getStatusLabel(report.status),
+              report.admin_response || '-',
+            ])}
+          />
+        </div>
       </Card>
     </div>
   )

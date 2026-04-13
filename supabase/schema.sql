@@ -1,5 +1,4 @@
 create extension if not exists "uuid-ossp";
-create extension if not exists "pgcrypto";
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -134,48 +133,6 @@ as $$
     select 1 from public.profiles p where p.id = uid and p.role = 'admin'
   );
 $$;
-
-create or replace function public.admin_reset_user_password(target_user_id uuid, new_password text)
-returns void
-language plpgsql
-security definer
-set search_path = public, auth
-as $$
-begin
-  if auth.uid() is null then
-    raise exception 'Not authenticated';
-  end if;
-
-  if not public.is_admin(auth.uid()) then
-    raise exception 'Only admins can reset passwords';
-  end if;
-
-  if length(trim(coalesce(new_password, ''))) < 8 then
-    raise exception 'Password must be at least 8 characters long';
-  end if;
-
-  if not exists (
-    select 1
-    from public.profiles p
-    where p.id = target_user_id
-      and p.role = 'student'
-  ) then
-    raise exception 'Target student account not found';
-  end if;
-
-  update auth.users
-  set encrypted_password = crypt(new_password, gen_salt('bf')),
-      updated_at = now()
-  where id = target_user_id;
-
-  if not found then
-    raise exception 'Authentication account not found';
-  end if;
-end;
-$$;
-
-revoke all on function public.admin_reset_user_password(uuid, text) from public;
-grant execute on function public.admin_reset_user_password(uuid, text) to authenticated;
 
 create policy "Users can read own profile"
 on public.profiles

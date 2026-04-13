@@ -93,14 +93,6 @@ export const attendanceService = {
 
     if (error) throw error
   },
-  async resetRegisteredStudentPassword(id: string, newPassword: string) {
-    const { error } = await supabase.rpc('admin_reset_user_password', {
-      target_user_id: id,
-      new_password: newPassword,
-    })
-
-    if (error) throw error
-  },
   async countForCurrentUser() {
     const {
       data: { user },

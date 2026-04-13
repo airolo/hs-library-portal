@@ -163,41 +163,43 @@ export const FeedbackManagementPage = () => {
       </header>
 
       <Card title="Submitted Reports">
-        <DataTable
-          headers={['Student', 'Program', 'Category', 'Priority', 'Description', 'Status', 'Admin Response', 'Actions']}
-          rows={reports.map((item) => [
-            item.profiles?.full_name || '-',
-            item.profiles?.program || '-',
-            getCategoryLabel(item.category),
-            getPriorityLabel(item.priority),
-            item.description,
-            getStatusLabel(item.status),
-            item.admin_response || '-',
-            <div className="actions actions-nowrap" key={item.id}>
-              {item.status === 'resolved' ? (
-                <>
+        <div className="table-scroll-y">
+          <DataTable
+            headers={['Student', 'Program', 'Category', 'Priority', 'Description', 'Status', 'Admin Response', 'Actions']}
+            rows={reports.map((item) => [
+              item.profiles?.full_name || '-',
+              item.profiles?.program || '-',
+              getCategoryLabel(item.category),
+              getPriorityLabel(item.priority),
+              item.description,
+              getStatusLabel(item.status),
+              item.admin_response || '-',
+              <div className="actions actions-nowrap" key={item.id}>
+                {item.status === 'resolved' ? (
+                  <>
+                    <ActionIconButton
+                      icon="edit"
+                      label="Edit"
+                      onClick={() => openActionModal(item, 'resolved')}
+                    />
+                    <ActionIconButton
+                      icon="delete"
+                      label="Delete"
+                      variant="danger"
+                      onClick={() => openDeleteModal(item)}
+                    />
+                  </>
+                ) : (
                   <ActionIconButton
-                    icon="edit"
-                    label="Edit"
+                    icon="approve"
+                    label="Resolve"
                     onClick={() => openActionModal(item, 'resolved')}
                   />
-                  <ActionIconButton
-                    icon="delete"
-                    label="Delete"
-                    variant="danger"
-                    onClick={() => openDeleteModal(item)}
-                  />
-                </>
-              ) : (
-                <ActionIconButton
-                  icon="approve"
-                  label="Resolve"
-                  onClick={() => openActionModal(item, 'resolved')}
-                />
-              )}
-            </div>,
-          ])}
-        />
+                )}
+              </div>,
+            ])}
+          />
+        </div>
       </Card>
 
       <Modal
@@ -205,7 +207,7 @@ export const FeedbackManagementPage = () => {
         title={selectedReport?.status === 'resolved' ? 'Edit Response' : 'Resolve Report'}
         onClose={closeActionModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button type="button" className="btn outline" onClick={closeActionModal} disabled={isSaving}>
               Cancel
             </button>
@@ -254,7 +256,7 @@ export const FeedbackManagementPage = () => {
         title="Delete Feedback Report"
         onClose={closeDeleteModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button type="button" className="btn outline" onClick={closeDeleteModal} disabled={isDeleting}>
               Cancel
             </button>

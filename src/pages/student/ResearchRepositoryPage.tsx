@@ -72,7 +72,7 @@ export const ResearchRepositoryPage = () => {
       <Card title="Filters">
         <div className="filters-grid">
           <label>
-            Search keyword
+            Search 
             <input value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
           <label>
@@ -94,20 +94,12 @@ export const ResearchRepositoryPage = () => {
       <Card title="Repository Entries">
         <div className="table-scroll-y">
           <DataTable
-            headers={['Title', 'Author/s', 'Year', 'Actions']}
+            headers={['Title', 'Author/s', 'Year']}
             rows={items.map((item) => [
               item.title,
               renderAuthorVertical(item.author),
               item.year,
-              <div className="actions" key={item.id}>
-                <button
-                  type="button"
-                  className="btn xs"
-                  onClick={() => setSelectedItem(item)}
-                >
-                  View
-                </button>
-              </div>,
+             
             ])}
           />
         </div>

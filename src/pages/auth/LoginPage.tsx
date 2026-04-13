@@ -86,6 +86,7 @@ export const LoginPage = () => {
         <p>
           No account yet? <Link to="/register">Register as student</Link>
         </p>
+        <p className="credit-text">Developed by: Bradley Soloria</p>
       </section>
     </div>
   )

@@ -148,44 +148,46 @@ export const RequestManagementPage = () => {
       </header>
 
       <Card title="All Requests">
-        <DataTable
-          headers={['Student', 'Program', 'Title', 'Type', 'Status', 'Admin Notes', 'Actions']}
-          rows={requests.map((item) => [
-            item.profiles?.full_name || '-',
-            item.profiles?.program || '-',
-            item.title,
-            item.resource_type,
-            item.status,
-            item.admin_notes || '-',
-            <div className="actions actions-nowrap" key={item.id}>
-              {item.status === 'pending' ? (
-                <>
-                  <ActionIconButton
-                    icon="approve"
-                    label="Approve"
-                    onClick={() => openActionModal(item, 'approved')}
-                  />
-                  <ActionIconButton
-                    icon="reject"
-                    label="Reject"
-                    variant="outline"
-                    onClick={() => openActionModal(item, 'rejected')}
-                  />
-                </>
-              ) : (
-                <>
-                  <ActionIconButton icon="edit" label="Edit" onClick={() => openEditModal(item)} />
-                  <ActionIconButton
-                    icon="delete"
-                    label="Delete"
-                    variant="danger"
-                    onClick={() => openDeleteModal(item)}
-                  />
-                </>
-              )}
-            </div>,
-          ])}
-        />
+        <div className="table-scroll-y">
+          <DataTable
+            headers={['Student', 'Program', 'Title', 'Type', 'Status', 'Admin Notes', 'Actions']}
+            rows={requests.map((item) => [
+              item.profiles?.full_name || '-',
+              item.profiles?.program || '-',
+              item.title,
+              item.resource_type,
+              item.status,
+              item.admin_notes || '-',
+              <div className="actions actions-nowrap" key={item.id}>
+                {item.status === 'pending' ? (
+                  <>
+                    <ActionIconButton
+                      icon="approve"
+                      label="Approve"
+                      onClick={() => openActionModal(item, 'approved')}
+                    />
+                    <ActionIconButton
+                      icon="reject"
+                      label="Reject"
+                      variant="outline"
+                      onClick={() => openActionModal(item, 'rejected')}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ActionIconButton icon="edit" label="Edit" onClick={() => openEditModal(item)} />
+                    <ActionIconButton
+                      icon="delete"
+                      label="Delete"
+                      variant="danger"
+                      onClick={() => openDeleteModal(item)}
+                    />
+                  </>
+                )}
+              </div>,
+            ])}
+          />
+        </div>
       </Card>
 
       <Modal
@@ -193,7 +195,7 @@ export const RequestManagementPage = () => {
         title={actionStatus === 'approved' ? 'Approve Request' : 'Reject Request'}
         onClose={closeActionModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button
               type="button"
               className="btn outline"
@@ -241,7 +243,7 @@ export const RequestManagementPage = () => {
         title="Edit Request"
         onClose={closeEditModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button
               type="button"
               className="btn outline"
@@ -293,7 +295,7 @@ export const RequestManagementPage = () => {
         title="Delete Request"
         onClose={closeDeleteModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button
               type="button"
               className="btn outline"

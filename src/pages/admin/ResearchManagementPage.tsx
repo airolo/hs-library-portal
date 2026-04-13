@@ -228,7 +228,7 @@ export const ResearchManagementPage = () => {
         title="Edit Research Entry"
         onClose={() => setEditingItem(null)}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button
               type="button"
               className="btn outline"
@@ -272,7 +272,7 @@ export const ResearchManagementPage = () => {
         title="Delete Research Entry"
         onClose={closeDeleteModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button type="button" className="btn outline" onClick={closeDeleteModal} disabled={deleteIsLoading}>
               Cancel
             </button>

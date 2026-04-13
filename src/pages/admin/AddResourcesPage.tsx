@@ -309,7 +309,7 @@ export const AddResourcesPage = () => {
         title="Edit Resource"
         onClose={closeEditModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button
               type="button"
               className="btn outline"

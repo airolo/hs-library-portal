@@ -1,7 +1,7 @@
 .activity-summary {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
 }
 
 .activity-section h3 {
@@ -145,11 +145,6 @@
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .activity-summary {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
   .activity-item-header {
     flex-direction: column;
     gap: 0.5rem;
@@ -163,5 +158,23 @@
 
   .status-badge {
     flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .activity-summary {
+    gap: 1rem;
+  }
+
+  .activity-item {
+    padding: 0.85rem;
+  }
+
+  .activity-item-actions {
+    gap: 0.4rem;
+  }
+
+  .activity-item-details p {
+    font-size: 0.85rem;
   }
 }

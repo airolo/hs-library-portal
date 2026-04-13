@@ -116,6 +116,7 @@ export const RegisterPage = () => {
         <p>
           Have an account? <Link to="/login">Back to login</Link>
         </p>
+        <p className="credit-text">Developed by: Bradley Soloria</p>
       </section>
     </div>
   )

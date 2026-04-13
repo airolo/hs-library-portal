@@ -129,24 +129,26 @@ export const AnnouncementManagementPage = () => {
         <h2>Announcements and Events Management</h2>
         <p>Create, update, and delete announcement and event entries.</p>
       </header>
-  <Card title="Published Entries">
-        <DataTable
-          headers={['Title', 'Date', 'Content', 'Actions']}
-          rows={entries.map((entry) => [
-            entry.title,
-            formatDate(entry.event_date || entry.created_at),
-            entry.content,
-            <div className="actions" key={entry.id}>
-              <ActionIconButton icon="edit" label="Edit" onClick={() => edit(entry)} />
-              <ActionIconButton
-                icon="delete"
-                label="Delete"
-                variant="danger"
-                onClick={() => openDeleteModal(entry)}
-              />
-            </div>,
-          ])}
-        />
+      <Card title="Published Entries">
+        <div className="table-scroll-y">
+          <DataTable
+            headers={['Title', 'Date', 'Content', 'Actions']}
+            rows={entries.map((entry) => [
+              entry.title,
+              formatDate(entry.event_date || entry.created_at),
+              entry.content,
+              <div className="actions" key={entry.id}>
+                <ActionIconButton icon="edit" label="Edit" onClick={() => edit(entry)} />
+                <ActionIconButton
+                  icon="delete"
+                  label="Delete"
+                  variant="danger"
+                  onClick={() => openDeleteModal(entry)}
+                />
+              </div>,
+            ])}
+          />
+        </div>
       </Card>
       <Card title="Create Announcement/Event">
         <form className="form-grid" onSubmit={submitCreate}>
@@ -175,7 +177,7 @@ export const AnnouncementManagementPage = () => {
         title="Edit Announcement/Event"
         onClose={closeEditModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button type="button" className="btn outline" onClick={closeEditModal} disabled={editIsLoading}>
               Cancel
             </button>
@@ -216,7 +218,7 @@ export const AnnouncementManagementPage = () => {
         title="Delete Announcement/Event"
         onClose={closeDeleteModal}
         footer={
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="modal-actions">
             <button type="button" className="btn outline" onClick={closeDeleteModal} disabled={deleteIsLoading}>
               Cancel
             </button>
