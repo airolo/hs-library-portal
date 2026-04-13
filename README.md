@@ -6,20 +6,20 @@ Full-stack web application for a College of Medicine Health Sciences Library, bu
 
 Student features:
 - Email authentication (login/register)
-- Dashboard with announcements and quick links
-- Attendance logging (manual time in/time out fallback)
+- Dashboard with latest announcements and notifications
+- Browse Resources search and filtering
 - Research repository search and filtering
 - Book/resource request submission with status tracking
 - Announcements and events viewing
-- Discussion room reservation booking
+- Feedback and issues submission 
 
 Admin features:
-- Analytics dashboard (daily/monthly visits, active program, average stay duration)
-- Attendance log monitoring
+- Dashboard (registered students, pending requests, feedback action, announcements)    with Quick Action buttons and Latest Activity
+- Manage User's
 - Research repository management (create/approve/reject)
 - Resource request management (approve/reject)
 - Announcement/event management (create/update/delete)
-- Discussion room reservation management (approve/reject)
+- Feedback and Issues management   (approve/reject)
 
 ## Tech Stack
 
@@ -90,8 +90,8 @@ npm run dev
 Schema and RLS policies are in [supabase/schema.sql](supabase/schema.sql).
 
 Role-based control:
-- Students can access and mutate only their own attendance, requests, and reservations.
-- Admins can manage announcements, research, requests, rooms, and monitor all attendance.
+- Students can view resources, requests, and give feedbacks.
+- Admins can manage announcements, research, requests, rooms, and monitor all users.
 
 ## Build
 
