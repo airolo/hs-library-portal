@@ -58,16 +58,18 @@ supabase/
 npm install
 ```
 
-2. Copy env file and set values:
-
-```bash
-cp .env.example .env
-```
-
-Set:
+2. Create a `.env` file in the project root and set:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_SUPABASE_RESEARCH_BUCKET` (existing public storage bucket for research PDFs)
+
+Example:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SUPABASE_RESEARCH_BUCKET=research-pdfs
+```
 
 3. Apply database schema:
 - Open Supabase SQL editor.
