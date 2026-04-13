@@ -14,12 +14,13 @@ Student features:
 - Feedback and issues submission 
 
 Admin features:
-- Dashboard (registered students, pending requests, feedback action, announcements)    with Quick Action buttons and Latest Activity
-- Manage User's
+- Dashboard (registered students, pending requests, feedback action, announcements)    
+- Quick Action buttons and Latest Activity
+- Manage User's (Students)
 - Research repository management (create/approve/reject)
 - Resource request management (approve/reject)
 - Announcement/event management (create/update/delete)
-- Feedback and Issues management   (approve/reject)
+- Feedback and Issues management with resolve and admin response 
 
 ## Tech Stack
 
@@ -91,7 +92,7 @@ Schema and RLS policies are in [supabase/schema.sql](supabase/schema.sql).
 
 Role-based control:
 - Students can view resources, requests, and give feedbacks.
-- Admins can manage announcements, research, requests, rooms, and monitor all users.
+- Admins can manage announcements, research, requests, feedbacks, and monitor all users.
 
 ## Build
 
