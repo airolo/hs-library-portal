@@ -32,6 +32,7 @@ export interface ResearchItem {
   id: string
   title: string
   abstract: string
+  thesis_category: 'Undergrad Theses' | 'Man Theses (Masters)'
   location: string
   program: string
   year: number

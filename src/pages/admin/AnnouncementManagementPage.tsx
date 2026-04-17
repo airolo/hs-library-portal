@@ -124,7 +124,7 @@ export const AnnouncementManagementPage = () => {
   }
 
   return (
-    <div className="page-grid">
+    <div className="page-grid announcement-management-page">
       <header>
         <h2>Announcements and Events Management</h2>
         <p>Create, update, and delete announcement and event entries.</p>
@@ -134,10 +134,10 @@ export const AnnouncementManagementPage = () => {
           <DataTable
             headers={['Title', 'Date', 'Content', 'Actions']}
             rows={entries.map((entry) => [
-              entry.title,
-              formatDate(entry.event_date || entry.created_at),
-              entry.content,
-              <div className="actions" key={entry.id}>
+              <span className="announcement-table-title">{entry.title}</span>,
+              <span className="announcement-table-date">{formatDate(entry.event_date || entry.created_at)}</span>,
+              <p className="announcement-table-content">{entry.content}</p>,
+              <div className="actions announcement-table-actions" key={entry.id}>
                 <ActionIconButton icon="edit" label="Edit" onClick={() => edit(entry)} />
                 <ActionIconButton
                   icon="delete"

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
-import { Modal } from '../../components/ui/Modal'
 import { researchService } from '../../services/libraryService'
 import type { ResearchItem } from '../../types/domain'
 
@@ -33,14 +32,15 @@ const renderAuthorVertical = (author: string) => {
 export const ResearchRepositoryPage = () => {
   const [items, setItems] = useState<ResearchItem[]>([])
   const [query, setQuery] = useState('')
+  const [thesisCategory, setThesisCategory] = useState<'' | ResearchItem['thesis_category']>('')
   const [year, setYear] = useState<number | ''>('')
-  const [selectedItem, setSelectedItem] = useState<ResearchItem | null>(null)
 
   const loadItems = async () => {
     const data = await researchService.list({
       query: query || undefined,
       year: year || undefined,
       status: 'approved',
+      thesisCategory: thesisCategory || undefined,
     })
     setItems(data)
   }
@@ -76,6 +76,17 @@ export const ResearchRepositoryPage = () => {
             <input value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
           <label>
+            Category
+            <select
+              value={thesisCategory}
+              onChange={(event) => setThesisCategory(event.target.value as '' | ResearchItem['thesis_category'])}
+            >
+              <option value="">All</option>
+              <option value="Undergrad Theses">Undergrad Theses</option>
+              <option value="Man Theses (Masters)">Man Theses (Masters)</option>
+            </select>
+          </label>
+          <label>
             Year
             <input
               type="number"
@@ -91,36 +102,19 @@ export const ResearchRepositoryPage = () => {
         </div>
       </Card>
 
-      <Card title="Repository Entries">
+      <Card title="Research Repository">
         <div className="table-scroll-y">
           <DataTable
-            headers={['Title', 'Author/s', 'Year']}
+            headers={['Title', 'Category', 'Author/s', 'Year']}
             rows={items.map((item) => [
               item.title,
+              item.thesis_category,
               renderAuthorVertical(item.author),
               item.year,
-             
             ])}
           />
         </div>
       </Card>
-
-      <Modal
-        isOpen={!!selectedItem}
-        title={selectedItem?.title ?? ''}
-        onClose={() => setSelectedItem(null)}
-      >
-        {selectedItem && (
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            <div>
-              <strong>Author/s:</strong> {selectedItem.author}
-            </div>
-            <div>
-              <strong>Year:</strong> {selectedItem.year}
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   )
 }

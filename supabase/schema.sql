@@ -33,6 +33,7 @@ create table if not exists public.research_repository (
   id uuid primary key default uuid_generate_v4(),
   title text not null,
   abstract text not null,
+  thesis_category text not null default 'Undergrad Theses' check (thesis_category in ('Undergrad Theses', 'Man Theses (Masters)')),
   location text not null default 'Unassigned shelf',
   program text not null,
   year int not null,
@@ -45,6 +46,27 @@ create table if not exists public.research_repository (
 
 alter table public.research_repository
 add column if not exists location text not null default 'Unassigned shelf';
+
+alter table public.research_repository
+add column if not exists thesis_category text not null default 'Undergrad Theses';
+
+update public.research_repository
+set thesis_category = 'Undergrad Theses'
+where thesis_category is null;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'research_repository_thesis_category_check'
+      and conrelid = 'public.research_repository'::regclass
+  ) then
+    alter table public.research_repository
+    add constraint research_repository_thesis_category_check
+    check (thesis_category in ('Undergrad Theses', 'Man Theses (Masters)'));
+  end if;
+end $$;
 
 create table if not exists public.resource_requests (
   id uuid primary key default uuid_generate_v4(),

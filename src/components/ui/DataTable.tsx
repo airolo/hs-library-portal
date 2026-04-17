@@ -23,7 +23,9 @@ export const DataTable = ({ headers, rows }: DataTableProps) => {
             rows.map((row, index) => (
               <tr key={index}>
                 {row.map((cell, cellIndex) => (
-                  <td key={`${index}-${cellIndex}`}>{cell}</td>
+                  <td key={`${index}-${cellIndex}`} data-label={headers[cellIndex] ?? ''}>
+                    {cell}
+                  </td>
                 ))}
               </tr>
             ))

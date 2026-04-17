@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import type { UserRole } from '../../types/domain'
@@ -33,11 +34,49 @@ const navByRole: Record<UserRole, NavItem[]> = {
 
 export const AppShell = () => {
   const { profile, signOut } = useAuth()
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const navItems = profile ? navByRole[profile.role] : []
+
+  const toggleMobileNav = () => {
+    setIsMobileNavOpen((prev) => !prev)
+  }
+
+  const closeMobileNav = () => {
+    setIsMobileNavOpen(false)
+  }
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <header className="mobile-topbar">
+        <div>
+          <strong>Health Sciences Library</strong>
+          <p className="mobile-topbar-meta">Portal</p>
+        </div>
+        <button
+          type="button"
+          className="btn outline mobile-menu-btn"
+          onClick={toggleMobileNav}
+          aria-expanded={isMobileNavOpen}
+          aria-controls="portal-sidebar-nav"
+          aria-label={isMobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        >
+          {isMobileNavOpen ? 'Close' : 'Menu'}
+        </button>
+      </header>
+
+      {isMobileNavOpen ? (
+        <button
+          type="button"
+          className="sidebar-overlay"
+          onClick={closeMobileNav}
+          aria-label="Close navigation"
+        />
+      ) : null}
+
+      <aside
+        id="portal-sidebar-nav"
+        className={`sidebar ${isMobileNavOpen ? 'open' : ''}`}
+      >
         <h1>Health Sciences Library</h1>
         <p className="sidebar-meta">Management and Engagement Portal</p>
 
@@ -48,6 +87,7 @@ export const AppShell = () => {
               to={item.to}
               end={item.to.endsWith('/student') || item.to.endsWith('/admin')}
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={closeMobileNav}
             >
               {item.label}
             </NavLink>

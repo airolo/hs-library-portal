@@ -19,15 +19,19 @@ export const AnnouncementsPage = () => {
       </header>
 
       <Card title="All Announcements and Events">
-        <ul className="list">
-          {announcements.map((item) => (
-            <li key={item.id}>
-              <strong>{item.title}</strong>
-              <p>{item.content}</p>
-              <small>{formatDate(item.event_date || item.created_at)}</small>
-            </li>
-          ))}
-        </ul>
+        {announcements.length > 0 ? (
+          <ul className="list announcements-list">
+            {announcements.map((item) => (
+              <li key={item.id} className="announcement-item">
+                <div className="announcement-meta">{formatDate(item.event_date || item.created_at)}</div>
+                <strong className="announcement-title">{item.title}</strong>
+                <p className="announcement-content">{item.content}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="announcements-empty-state">No announcements available yet.</p>
+        )}
       </Card>
     </div>
   )

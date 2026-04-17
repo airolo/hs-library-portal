@@ -9,6 +9,7 @@ import type { ResearchItem } from '../../types/domain'
 const DEFAULT_PROGRAM = 'Nursing'
 const DEFAULT_LOCATION = 'Unassigned shelf'
 const DEFAULT_ABSTRACT = 'No abstract provided.'
+const DEFAULT_THESIS_CATEGORY: ResearchItem['thesis_category'] = 'Undergrad Theses'
 
 const renderAuthorVertical = (author: string) => {
   const commaSeparatedAuthors = author
@@ -40,10 +41,12 @@ export const ResearchManagementPage = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
+  const [thesisCategory, setThesisCategory] = useState<ResearchItem['thesis_category']>(DEFAULT_THESIS_CATEGORY)
   const [year, setYear] = useState(new Date().getFullYear())
   const [editingItem, setEditingItem] = useState<ResearchItem | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editAuthor, setEditAuthor] = useState('')
+  const [editThesisCategory, setEditThesisCategory] = useState<ResearchItem['thesis_category']>(DEFAULT_THESIS_CATEGORY)
   const [editYear, setEditYear] = useState(0)
   const [deletingItem, setDeletingItem] = useState<ResearchItem | null>(null)
   const [deleteIsLoading, setDeleteIsLoading] = useState(false)
@@ -79,6 +82,7 @@ export const ResearchManagementPage = () => {
       await researchService.create({
         title,
         author,
+        thesis_category: thesisCategory,
         location: DEFAULT_LOCATION,
         program: DEFAULT_PROGRAM,
         year,
@@ -89,6 +93,7 @@ export const ResearchManagementPage = () => {
       })
       setTitle('')
       setAuthor('')
+      setThesisCategory(DEFAULT_THESIS_CATEGORY)
       await load()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to save research entry.')
@@ -100,6 +105,7 @@ export const ResearchManagementPage = () => {
     setEditingItem(item)
     setEditTitle(item.title)
     setEditAuthor(item.author)
+    setEditThesisCategory(item.thesis_category)
     setEditYear(item.year)
   }
 
@@ -113,6 +119,7 @@ export const ResearchManagementPage = () => {
       await researchService.update(editingItem.id, {
         title: editTitle,
         author: editAuthor,
+        thesis_category: editThesisCategory,
         year: editYear,
       })
       setEditingItem(null)
@@ -180,12 +187,22 @@ export const ResearchManagementPage = () => {
             <input required value={author} onChange={(event) => setAuthor(event.target.value)} />
           </label>
           <label>
+            Category
+            <select
+              value={thesisCategory}
+              onChange={(event) => setThesisCategory(event.target.value as ResearchItem['thesis_category'])}
+            >
+              <option value="Undergrad Theses">Undergrad Theses</option>
+              <option value="Man Theses (Masters)">Man Theses (Masters)</option>
+            </select>
+          </label>
+          <label>
             Year
             <input type="number" required value={year} onChange={(event) => setYear(Number(event.target.value))} />
           </label>
           <div className="actions full-row">
             <button className="btn" type="submit">
-              Save Entry
+              Add Research
             </button>
           </div>
         </form>
@@ -204,9 +221,10 @@ export const ResearchManagementPage = () => {
         </div>
         <div className="table-scroll-y">
           <DataTable
-            headers={['Title', 'Author/s', 'Year', 'Actions']}
+            headers={['Title', 'Category', 'Author/s', 'Year', 'Actions']}
             rows={filteredItems.map((item) => [
               item.title,
+              item.thesis_category,
               renderAuthorVertical(item.author),
               item.year,
               <div className="actions actions-nowrap" key={item.id}>
@@ -258,6 +276,16 @@ export const ResearchManagementPage = () => {
             <label>
               Author/s
               <input required value={editAuthor} onChange={(event) => setEditAuthor(event.target.value)} />
+            </label>
+            <label>
+              Category
+              <select
+                value={editThesisCategory}
+                onChange={(event) => setEditThesisCategory(event.target.value as ResearchItem['thesis_category'])}
+              >
+                <option value="Undergrad Theses">Undergrad Theses</option>
+                <option value="Man Theses (Masters)">Man Theses (Masters)</option>
+              </select>
             </label>
             <label>
               Year

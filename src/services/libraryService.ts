@@ -149,7 +149,13 @@ export const attendanceService = {
 }
 
 export const researchService = {
-  async list(filters?: { program?: string; year?: number; query?: string; status?: string }) {
+  async list(filters?: {
+    program?: string
+    year?: number
+    query?: string
+    status?: string
+    thesisCategory?: ResearchItem['thesis_category']
+  }) {
     let query = supabase.from('research_repository').select('*').order('created_at', { ascending: false })
 
     if (filters?.program) {
@@ -160,6 +166,9 @@ export const researchService = {
     }
     if (filters?.status) {
       query = query.eq('status', filters.status)
+    }
+    if (filters?.thesisCategory) {
+      query = query.eq('thesis_category', filters.thesisCategory)
     }
     if (filters?.query) {
       query = query.or(`title.ilike.%${filters.query}%,abstract.ilike.%${filters.query}%`)

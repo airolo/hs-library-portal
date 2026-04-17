@@ -44,8 +44,8 @@ export const ResourceRequestsPage = () => {
   return (
     <div className="page-grid">
       <header>
-        <h2>Book and Resource Requests</h2>
-        <p>Submit requests and track approval status updates.</p>
+        <h2>Book and Journal Requests</h2>
+        <p>Requests New Books/Journals to be added and track approval status updates.</p>
       </header>
 
       <Card title="Create Request">
