@@ -84,7 +84,7 @@ export const LoginPage = () => {
         </form>
 
         <p>
-          No account yet? <Link to="/register">Register as student</Link>
+          No account yet? <Link to="/register">Register Here</Link>
         </p>
         <p className="credit-text">Developed by: Bradley Soloria</p>
       </section>

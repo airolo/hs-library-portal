@@ -96,7 +96,7 @@ export const RegisterPage = () => {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-            <small>Use your school account only: @bicol-u.edu.ph</small>
+            <small>Use your school email account only: @bicol-u.edu.ph</small>
           </label>
           <label>
             Password
