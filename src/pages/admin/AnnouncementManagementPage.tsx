@@ -129,6 +129,27 @@ export const AnnouncementManagementPage = () => {
         <h2>Announcements and Events Management</h2>
         <p>Create, update, and delete announcement and event entries.</p>
       </header>
+       <Card title="Create Announcement/Event">
+        <form className="form-grid" onSubmit={submitCreate}>
+          <label>
+            Title
+            <input required value={title} onChange={(event) => setTitle(event.target.value)} />
+          </label>
+          <label>
+             Date
+            <input type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} />
+          </label>
+          <label>
+            Content
+            <textarea required rows={4} value={content} onChange={(event) => setContent(event.target.value)} />
+          </label>
+          <div className="actions">
+            <button className="btn" type="submit">
+              Publish
+            </button>
+          </div>
+        </form>
+      </Card>
       <Card title="Published Entries">
         <div className="table-scroll-y">
           <DataTable
@@ -150,27 +171,7 @@ export const AnnouncementManagementPage = () => {
           />
         </div>
       </Card>
-      <Card title="Create Announcement/Event">
-        <form className="form-grid" onSubmit={submitCreate}>
-          <label>
-            Title
-            <input required value={title} onChange={(event) => setTitle(event.target.value)} />
-          </label>
-          <label>
-             Date
-            <input type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} />
-          </label>
-          <label>
-            Content
-            <textarea required rows={4} value={content} onChange={(event) => setContent(event.target.value)} />
-          </label>
-          <div className="actions">
-            <button className="btn" type="submit">
-              Publish
-            </button>
-          </div>
-        </form>
-      </Card>
+     
 
       <Modal
         isOpen={!!editingEntry}
