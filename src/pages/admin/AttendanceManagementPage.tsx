@@ -12,11 +12,9 @@ export const AttendanceManagementPage = () => {
   const [rows, setRows] = useState<Profile[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [programFilter, setProgramFilter] = useState('')
-  const [yearLevelFilter, setYearLevelFilter] = useState('')
   const [editingStudent, setEditingStudent] = useState<Profile | null>(null)
   const [editFullName, setEditFullName] = useState('')
   const [editProgram, setEditProgram] = useState('')
-  const [editYearLevel, setEditYearLevel] = useState<number | ''>('')
   const [editRole, setEditRole] = useState<Profile['role']>('student')
   const [editIsLoading, setEditIsLoading] = useState(false)
   const [deleteStudent, setDeleteStudent] = useState<Profile | null>(null)
@@ -35,7 +33,6 @@ export const AttendanceManagementPage = () => {
     setEditingStudent(student)
     setEditFullName(student.full_name)
     setEditProgram(student.program || '')
-    setEditYearLevel(student.year_level ?? '')
     setEditRole(student.role)
   }
 
@@ -60,7 +57,6 @@ export const AttendanceManagementPage = () => {
       await attendanceService.updateRegisteredStudent(editingStudent.id, {
         full_name: editFullName,
         program: editProgram || null,
-        year_level: editYearLevel === '' ? null : Number(editYearLevel),
         role: editRole,
       })
       setEditingStudent(null)
@@ -111,9 +107,7 @@ export const AttendanceManagementPage = () => {
 
     const matchesProgram = !programFilter || (row.program || '') === programFilter
 
-    const matchesYearLevel = !yearLevelFilter || String(row.year_level || '') === yearLevelFilter
-
-    return matchesSearch && matchesProgram && matchesYearLevel
+    return matchesSearch && matchesProgram
   })
 
   return (
@@ -144,28 +138,17 @@ export const AttendanceManagementPage = () => {
               ))}
             </select>
           </label>
-          <label>
-            Year Level
-            <select value={yearLevelFilter} onChange={(event) => setYearLevelFilter(event.target.value)}>
-              <option value="">All</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </label>
         </div>
         <div className="table-scroll-y">
           <DataTable
-            headers={['Student', 'Email', 'Program', 'Year Level', 'Role', 'Registered On', 'Actions']}
+            headers={['Student', 'Email', 'Program', 'Role', 'Created On', 'Actions']}
             rows={filteredRows.map((row) => [
               row.full_name,
               row.email,
               row.program || '-',
-              row.year_level ?? '-',
               row.role,
               formatDate(row.created_at),
-              <div className="actions actions-nowrap" key={row.id}>
+              <div className="table-actions actions-nowrap" key={row.id}>
                 <ActionIconButton icon="edit" label="Edit" onClick={() => openEditModal(row)} />
                 <ActionIconButton
                   icon="delete"
@@ -211,16 +194,6 @@ export const AttendanceManagementPage = () => {
             <label>
               Program
               <input value={editProgram} onChange={(event) => setEditProgram(event.target.value)} />
-            </label>
-            <label>
-              Year Level
-              <input
-                type="number"
-                min={1}
-                max={10}
-                value={editYearLevel}
-                onChange={(event) => setEditYearLevel(event.target.value ? Number(event.target.value) : '')}
-              />
             </label>
             <label>
               Role

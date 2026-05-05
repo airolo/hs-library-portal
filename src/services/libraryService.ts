@@ -73,7 +73,7 @@ export const attendanceService = {
   async listRegisteredStudents() {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, program, year_level, created_at')
+      .select('id, full_name, email, role, program, created_at')
       .eq('role', 'student')
       .order('full_name', { ascending: true })
 
@@ -82,7 +82,7 @@ export const attendanceService = {
   },
   async updateRegisteredStudent(
     id: string,
-    payload: Pick<Profile, 'full_name' | 'role' | 'program' | 'year_level'>,
+    payload: Pick<Profile, 'full_name' | 'role' | 'program'>,
   ) {
     const { error } = await supabase.from('profiles').update(payload).eq('id', id)
 
@@ -288,7 +288,6 @@ export const resourceService = {
   async list(filters?: {
     query?: string
     resourceType?: 'book' | 'journal' | ''
-    category?: '' | 'Dentistry' | 'Nursing' | 'Medicine'
   }) {
     let query = supabase
       .from('library_resources')
@@ -299,13 +298,9 @@ export const resourceService = {
       query = query.eq('resource_type', filters.resourceType)
     }
 
-    if (filters?.category) {
-      query = query.eq('category', filters.category)
-    }
-
     if (filters?.query) {
       query = query.or(
-        `title.ilike.%${filters.query}%,author.ilike.%${filters.query}%,category.ilike.%${filters.query}%,call_number.ilike.%${filters.query}%`,
+        `title.ilike.%${filters.query}%,author.ilike.%${filters.query}%,copyright.ilike.%${filters.query}%,call_number.ilike.%${filters.query}%`,
       )
     }
 
@@ -425,7 +420,6 @@ export const feedbackService = {
   async create(payload: {
     category: FeedbackReport['category']
     description: string
-    priority: FeedbackReport['priority']
   }) {
     const {
       data: { user },

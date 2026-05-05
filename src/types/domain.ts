@@ -6,7 +6,6 @@ export interface Profile {
   full_name: string
   role: UserRole
   program: string | null
-  year_level: number | null
   created_at: string
 }
 
@@ -32,7 +31,7 @@ export interface ResearchItem {
   id: string
   title: string
   abstract: string
-  thesis_category: 'Undergrad Theses' | 'Man Theses (Masters)'
+  thesis_category: 'Undergraduate Nursing Thesis' | 'Master of Arts in Nursing Thesis'
   location: string
   program: string
   year: number
@@ -60,7 +59,7 @@ export interface LibraryResource {
   resource_type: 'book' | 'journal'
   author: string
   call_number: string | null
-  category: string | null
+  copyright: string | null
   description: string | null
   total_copies: number
   available_copies: number
@@ -85,7 +84,6 @@ export interface FeedbackReport {
   student_id: string
   category: 'book_request' | 'journal_access' | 'repository_issue' | 'general_feedback' | 'bug_report'
   description: string
-  priority: 'low' | 'medium' | 'high'
   status: 'new' | 'in_review' | 'resolved' | 'closed'
   admin_response: string | null
   created_at: string

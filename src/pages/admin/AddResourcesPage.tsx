@@ -1,18 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
 import { Modal } from '../../components/ui/Modal'
 import { resourceService } from '../../services/libraryService'
 import type { LibraryResource } from '../../types/domain'
+import { getExcelNumber, getExcelText, readExcelRows } from '../../utils/excelImport'
 
 export const AddResourcesPage = () => {
   const [resources, setResources] = useState<LibraryResource[]>([])
+  const importInputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState('')
   const [resourceType, setResourceType] = useState<'book' | 'journal'>('book')
   const [author, setAuthor] = useState('')
   const [callNumber, setCallNumber] = useState('')
-  const [category, setCategory] = useState<'' | 'Dentistry' | 'Nursing' | 'Medicine'>('')
+  const [copyright, setCopyright] = useState('')
   const [totalCopies, setTotalCopies] = useState(1)
   const [availableCopies, setAvailableCopies] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -23,14 +25,15 @@ export const AddResourcesPage = () => {
   const [editResourceType, setEditResourceType] = useState<'book' | 'journal'>('book')
   const [editAuthor, setEditAuthor] = useState('')
   const [editCallNumber, setEditCallNumber] = useState('')
-  const [editCategory, setEditCategory] = useState<'' | 'Dentistry' | 'Nursing' | 'Medicine'>('')
+  const [editCopyright, setEditCopyright] = useState('')
   const [editTotalCopies, setEditTotalCopies] = useState(1)
   const [editAvailableCopies, setEditAvailableCopies] = useState(1)
   const [editIsLoading, setEditIsLoading] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
   const [inventorySearch, setInventorySearch] = useState('')
   const [inventoryType, setInventoryType] = useState<'' | 'book' | 'journal'>('')
-  const [inventoryCategory, setInventoryCategory] = useState<'' | 'Dentistry' | 'Nursing' | 'Medicine'>('')
+  const [importIsLoading, setImportIsLoading] = useState(false)
+  const [importFeedback, setImportFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const load = async () => {
     const data = await resourceService.list()
@@ -59,11 +62,90 @@ export const AddResourcesPage = () => {
     setResourceType('book')
     setAuthor('')
     setCallNumber('')
-    setCategory('')
+    setCopyright('')
     setTotalCopies(1)
     setAvailableCopies(1)
     setError(null)
     setSuccess(false)
+  }
+
+  const openImportDialog = () => {
+    importInputRef.current?.click()
+  }
+
+  const handleExcelImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file) {
+      return
+    }
+
+    setImportFeedback(null)
+    setImportIsLoading(true)
+
+    try {
+      const rows = await readExcelRows(file)
+
+      if (rows.length === 0) {
+        throw new Error('The selected workbook does not contain any rows to import.')
+      }
+
+      let importedCount = 0
+      const skippedRows: string[] = []
+
+      for (const [index, row] of rows.entries()) {
+        try {
+          const resourceTitle = getExcelText(row, ['title'])
+          if (!resourceTitle) {
+            throw new Error('Title is required.')
+          }
+
+          const typeValue = getExcelText(row, ['type', 'resource type', 'resource_type'])
+          const importedType: 'book' | 'journal' = typeValue.toLowerCase().includes('journal') ? 'journal' : 'book'
+          const importedTotalCopies = getExcelNumber(row, ['total copies', 'total_copies', 'copies']) ?? 1
+          const normalizedTotalCopies = importedTotalCopies > 0 ? importedTotalCopies : 1
+          const importedAvailableCopies = getExcelNumber(row, ['available copies', 'available_copies']) ?? normalizedTotalCopies
+
+          await resourceService.create({
+            title: resourceTitle,
+            resource_type: importedType,
+            author: getExcelText(row, ['author']) || '',
+            call_number: getExcelText(row, ['call number', 'call_number']) || null,
+            copyright: getExcelText(row, ['copyright']) || null,
+            description: null,
+            total_copies: normalizedTotalCopies,
+            available_copies: Math.min(Math.max(importedAvailableCopies, 0), normalizedTotalCopies),
+          })
+
+          importedCount += 1
+        } catch (rowError) {
+          skippedRows.push(
+            `Row ${index + 2}: ${rowError instanceof Error ? rowError.message : 'Invalid row data.'}`,
+          )
+        }
+      }
+
+      await load()
+
+      if (importedCount === 0) {
+        throw new Error(skippedRows[0] || 'No rows could be imported from the workbook.')
+      }
+
+      const suffix = importedCount === 1 ? 'resource' : 'resources'
+      const skippedMessage = skippedRows.length > 0 ? ` ${skippedRows.length} row(s) were skipped.` : ''
+      setImportFeedback({
+        type: 'success',
+        message: `Imported ${importedCount} ${suffix}.${skippedMessage}`,
+      })
+    } catch (error) {
+      setImportFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to import the Excel file.',
+      })
+    } finally {
+      setImportIsLoading(false)
+    }
   }
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -78,7 +160,7 @@ export const AddResourcesPage = () => {
         resource_type: resourceType,
         author: author.trim() || '',
         call_number: callNumber || null,
-        category: category || null,
+        copyright: copyright.trim() || null,
         description: null,
         total_copies: totalCopies,
         available_copies: Math.min(availableCopies, totalCopies),
@@ -105,7 +187,7 @@ export const AddResourcesPage = () => {
     setEditResourceType(item.resource_type)
     setEditAuthor(item.author)
     setEditCallNumber(item.call_number || '')
-    setEditCategory((item.category as '' | 'Dentistry' | 'Nursing' | 'Medicine') || '')
+    setEditCopyright(item.copyright || '')
     setEditTotalCopies(item.total_copies)
     setEditAvailableCopies(item.available_copies)
   }
@@ -133,7 +215,7 @@ export const AddResourcesPage = () => {
         resource_type: editResourceType,
         author: editAuthor.trim() || '',
         call_number: editCallNumber || null,
-        category: editCategory || null,
+        copyright: editCopyright.trim() || null,
         total_copies: editTotalCopies,
         available_copies: Math.min(editAvailableCopies, editTotalCopies),
       }
@@ -160,23 +242,41 @@ export const AddResourcesPage = () => {
       !normalizedSearch ||
       item.title.toLowerCase().includes(normalizedSearch) ||
       item.author.toLowerCase().includes(normalizedSearch) ||
-      (item.category || '').toLowerCase().includes(normalizedSearch) ||
+      (item.copyright || '').toLowerCase().includes(normalizedSearch) ||
       (item.call_number || '').toLowerCase().includes(normalizedSearch)
 
     const matchesType = !inventoryType || item.resource_type === inventoryType
-    const matchesCategory = !inventoryCategory || item.category === inventoryCategory
 
-    return matchesSearch && matchesType && matchesCategory
+    return matchesSearch && matchesType
   })
 
   return (
     <div className="page-grid">
       <header>
-        <h2>Add Resources</h2>
+        <h2>Add Books/Journals</h2>
         <p>Add and manage books or journals for the library catalog.</p>
       </header>
 
-      <Card title="Add New Resource">
+      <Card
+        title="Add New Resource"
+        actions={
+          <button type="button" className="btn xs" onClick={openImportDialog} disabled={importIsLoading}>
+            {importIsLoading ? 'Importing...' : 'Import Excel'}
+          </button>
+        }
+      >
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleExcelImport}
+          style={{ display: 'none' }}
+        />
+        {importFeedback ? (
+          <div className={importFeedback.type === 'error' ? 'error-message' : 'success-message'}>
+            {importFeedback.message}
+          </div>
+        ) : null}
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">Resource saved successfully!</div>}
         <form className="form-grid compact-admin-form" onSubmit={submit}>
@@ -185,7 +285,7 @@ export const AddResourcesPage = () => {
             <input required value={title} onChange={(event) => setTitle(event.target.value)} />
           </label>
           <label>
-            Resource Type
+            Type
             <select
               value={resourceType}
               onChange={(event) => setResourceType(event.target.value as 'book' | 'journal')}
@@ -203,18 +303,8 @@ export const AddResourcesPage = () => {
             <input value={callNumber} onChange={(event) => setCallNumber(event.target.value)} />
           </label>
           <label>
-            Category
-            <select
-              value={category}
-              onChange={(event) =>
-                setCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
-              }
-            >
-              <option value="">Select a category</option>
-              <option value="Nursing">Nursing</option>
-              <option value="Medicine">Medicine</option>
-              <option value="Dentistry">Dentistry</option>
-            </select>
+            Copyright
+            <input value={copyright} onChange={(event) => setCopyright(event.target.value)} />
           </label>
           <label>
             Total Copies
@@ -251,7 +341,7 @@ export const AddResourcesPage = () => {
             <input
               value={inventorySearch}
               onChange={(event) => setInventorySearch(event.target.value)}
-              placeholder="Search title, author, category, call number"
+              placeholder="Search title, author, copyright, call number"
             />
           </label>
           <label>
@@ -265,32 +355,18 @@ export const AddResourcesPage = () => {
               <option value="journal">Journal</option>
             </select>
           </label>
-          <label>
-            Category
-            <select
-              value={inventoryCategory}
-              onChange={(event) =>
-                setInventoryCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
-              }
-            >
-              <option value="">All</option>
-              <option value="Dentistry">Dentistry</option>
-              <option value="Nursing">Nursing</option>
-              <option value="Medicine">Medicine</option>
-            </select>
-          </label>
         </div>
         <div className="table-scroll-y">
           <DataTable
-            headers={['Title', 'Type', 'Author', 'Call Number', 'Category', 'Copies', 'Actions']}
+            headers={['Title', 'Type', 'Author', 'Call Number', 'Copyright', 'Copies', 'Actions']}
             rows={filteredResources.map((item) => [
               item.title,
               item.resource_type,
               item.author,
               item.call_number || '-',
-              item.category || '-',
+              item.copyright || '-',
               `${item.available_copies}/${item.total_copies}`,
-              <div className="actions actions-nowrap" key={item.id}>
+              <div className="table-actions actions-nowrap" key={item.id}>
                 <ActionIconButton icon="edit" label="Edit" onClick={() => openEditModal(item)} />
                 <ActionIconButton
                   icon="delete"
@@ -361,18 +437,11 @@ export const AddResourcesPage = () => {
               />
             </label>
             <label>
-              Category
-              <select
-                value={editCategory}
-                onChange={(event) =>
-                  setEditCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
-                }
-              >
-                <option value="">Select category</option>
-                <option value="Nursing">Nursing</option>
-                <option value="Medicine">Medicine</option>
-                <option value="Dentistry">Dentistry</option>
-              </select>
+              Copyright
+              <input
+                value={editCopyright}
+                onChange={(event) => setEditCopyright(event.target.value)}
+              />
             </label>
             <label>
               Total Copies

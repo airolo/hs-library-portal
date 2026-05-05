@@ -158,7 +158,7 @@ export const AnnouncementManagementPage = () => {
               <span className="announcement-table-title">{entry.title}</span>,
               <span className="announcement-table-date">{formatDate(entry.event_date || entry.created_at)}</span>,
               <p className="announcement-table-content">{entry.content}</p>,
-              <div className="actions announcement-table-actions" key={entry.id}>
+              <div className="table-actions announcement-table-actions" key={entry.id}>
                 <ActionIconButton icon="edit" label="Edit" onClick={() => edit(entry)} />
                 <ActionIconButton
                   icon="delete"

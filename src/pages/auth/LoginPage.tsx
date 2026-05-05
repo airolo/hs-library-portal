@@ -50,44 +50,62 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className="auth-page">
-      <section className="auth-card">
-        <h1>Health Sciences Library Portal</h1>
-        <p><b>College of Medicine</b></p>
-        <p>Note: This is a backup system in case <b>OPAC</b> is unavailable</p>
+    <div className="auth-page auth-page-login">
+      <div className="auth-shell">
+        <aside className="auth-hero">
+          <p className="auth-kicker">Health Sciences Library</p>
+          <h1>Study smarter, discover the right resources faster.</h1>
+          <p className="auth-hero-copy">
+            Sign in to browse books and journals when OPAC is unavailable.
+          </p>
 
-        {location.state?.message ? <p className="success-text">{location.state.message}</p> : null}
-        {error ? <p className="error-text">{error}</p> : null}
+          <div className="auth-hero-pills">
+            <span>Books & Journals</span>
+            <span>Suggestions</span>
+            <span>Announcements</span>
+          </div>
+        </aside>
 
-        <form onSubmit={handleSubmit} className="form-grid">
-          <label>
-            Email
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-          <button type="submit" className="btn" disabled={loading}>
-            {loading ? 'Signing in...' : 'Login'}
-          </button>
-        </form>
+        <section className="auth-card auth-card-modern">
+          <h2>Welcome Students!</h2>
+          <p>Note: This is a backup system in case the  <b>OPAC</b> is unavailable in the library.</p>
+          <p>Use your official campus email to continue.</p>
 
-        <p>
-          No account yet? <Link to="/register">Register Here</Link>
-        </p>
-        <p className="credit-text">Developed by: Bradley Soloria</p>
-      </section>
+          {location.state?.message ? <p className="success-text auth-status">{location.state.message}</p> : null}
+          {error ? <p className="error-text auth-status">{error}</p> : null}
+
+          <form onSubmit={handleSubmit} className="form-grid auth-form">
+            <label>
+              Email
+              <input
+                type="email"
+                placeholder="name@bicol-u.edu.ph"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                placeholder="Enter your password"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </label>
+            <button type="submit" className="btn auth-submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Login'}
+            </button>
+          </form>
+
+          <p className="auth-link-row">
+            No account yet? <Link to="/register">Register Here</Link>
+          </p>
+          <p className="credit-text">Developed by: Bradley Soloria</p>
+        </section>
+      </div>
     </div>
   )
 }

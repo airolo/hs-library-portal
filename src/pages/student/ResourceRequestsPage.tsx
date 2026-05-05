@@ -44,25 +44,25 @@ export const ResourceRequestsPage = () => {
   return (
     <div className="page-grid">
       <header>
-        <h2>Book and Journal Requests</h2>
-        <p>Requests New Books/Journals to be added and track approval status updates.</p>
+        <h2>Book and Journal Suggestions</h2>
+        <p>Suggests New Books/Journals to be added and track approval status updates.</p>
       </header>
 
-      <Card title="Create Request">
+      <Card title="Create Suggestion">
         <form onSubmit={submitRequest} className="form-grid">
           <label>
-            Resource title
+            Title
             <input required value={title} onChange={(event) => setTitle(event.target.value)} />
           </label>
           <label>
-            Resource type
+            Type
             <select value={resourceType} onChange={(event) => setResourceType(event.target.value)}>
               <option>Book</option>
               <option>Journal</option>
             </select>
           </label>
           <label>
-            Details
+            Details (e.g. author, edition, copyright year)
             <textarea value={details} onChange={(event) => setDetails(event.target.value)} rows={3} />
           </label>
           <button type="submit" className="btn">
@@ -73,11 +73,12 @@ export const ResourceRequestsPage = () => {
       <Card title="Request Tracking">
         <div className="table-scroll-y">
           <DataTable
-            headers={['Date', 'Title', 'Type', 'Status', 'Admin Notes']}
+            headers={['Date', 'Title', 'Type', 'Details', 'Status', 'Admin Notes']}
             rows={requests.map((item) => [
               formatDateTime(item.created_at),
               item.title,
               item.resource_type,
+              item.details || '-',
               item.status,
               item.admin_notes || '-',
             ])}

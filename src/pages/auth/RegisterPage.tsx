@@ -5,16 +5,15 @@ import { useAuth } from '../../hooks/useAuth'
 export const RegisterPage = () => {
   const { signUp } = useAuth()
   const navigate = useNavigate()
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [program, setProgram] = useState('')
-  const [yearLevel, setYearLevel] = useState<number>(1)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const programOptions = ['Nursing', 'Dentistry', 'Medicine']
-  const yearLevelOptions = [1, 2, 3, 4]
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -32,9 +31,9 @@ export const RegisterPage = () => {
     const result = await signUp({
       email: normalizedEmail,
       password,
-      fullName,
+      firstName,
+      lastName,
       program,
-      yearLevel,
     })
 
     if (result.error) {
@@ -51,73 +50,94 @@ export const RegisterPage = () => {
   }
 
   return (
-    <div className="auth-page">
-      <section className="auth-card">
-        <h1>Student Registration</h1>
-        <p>Create your library portal account</p>
+    <div className="auth-page auth-page-register">
+      <div className="auth-shell">
+        <aside className="auth-hero">
+          <p className="auth-kicker">Student Registration</p>
+          <h1>Join the portal with a cleaner, more modern sign-up flow.</h1>
+          <p className="auth-hero-copy">
+            Create your library account once, then use it for books, journals, suggestions, and
+            announcements in one place.
+          </p>
 
-        {error ? <p className="error-text">{error}</p> : null}
+          <div className="auth-hero-pills">
+            <span>Official School Email</span>
+            <span>Quick Setup</span>
+            <span>Portal Access</span>
+          </div>
+        </aside>
 
-        <form onSubmit={handleSubmit} className="form-grid">
-          <label>
-            Full Name
-            <input required value={fullName} onChange={(event) => setFullName(event.target.value)} />
-          </label>
-          <label>
-            Program
-            <select required value={program} onChange={(event) => setProgram(event.target.value)}>
-              <option value="">Select Program</option>
-              {programOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Year Level
-            <select
-              required
-              value={String(yearLevel)}
-              onChange={(event) => setYearLevel(Number(event.target.value))}
-            >
-              {yearLevelOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Email
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-            <small>Use your school email account only: @bicol-u.edu.ph</small>
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              minLength={6}
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-          <button type="submit" className="btn" disabled={loading}>
-            {loading ? 'Creating account...' : 'Register'}
-          </button>
-        </form>
+        <section className="auth-card auth-card-modern">
+          <h2>Create your account</h2>
+          <p>Complete the form below to register.</p>
 
-        <p>
-          Have an account? <Link to="/login">Back to login</Link>
-        </p>
-        <p className="credit-text">Developed by: Bradley Soloria</p>
-      </section>
+          {error ? <p className="error-text auth-status">{error}</p> : null}
+
+          <form onSubmit={handleSubmit} className="form-grid auth-form">
+            <div className="two-column-grid">
+              <label>
+                First Name
+                <input
+                  required
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  placeholder="Enter first name"
+                />
+              </label>
+              <label>
+                Last Name
+                <input
+                  required
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                  placeholder="Enter last name"
+                />
+              </label>
+            </div>
+            <label>
+              Program
+              <select required value={program} onChange={(event) => setProgram(event.target.value)}>
+                <option value="">Select Program</option>
+                {programOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Email
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="name@bicol-u.edu.ph"
+              />
+              <small>Use your school email account only: @bicol-u.edu.ph</small>
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                minLength={6}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Create a password"
+              />
+            </label>
+            <button type="submit" className="btn auth-submit" disabled={loading}>
+              {loading ? 'Creating account...' : 'Register'}
+            </button>
+          </form>
+
+          <p className="auth-link-row">
+            Have an account? <Link to="/login">Back to login</Link>
+          </p>
+          <p className="credit-text">Developed by: Bradley Soloria</p>
+        </section>
+      </div>
     </div>
   )
 }

@@ -29,13 +29,11 @@ export const BrowseResourcesPage = () => {
   const [selectedResource, setSelectedResource] = useState<LibraryResource | null>(null)
   const [search, setSearch] = useState('')
   const [resourceType, setResourceType] = useState<'' | 'book' | 'journal'>('')
-  const [category, setCategory] = useState<'' | 'Dentistry' | 'Nursing' | 'Medicine'>('')
 
   const load = async () => {
     const resourceData = await resourceService.list({
       query: search || undefined,
       resourceType,
-      category,
     })
     setResources(resourceData)
   }
@@ -63,7 +61,7 @@ export const BrowseResourcesPage = () => {
   return (
     <div className="page-grid">
       <header>
-        <h2>Browse Resources</h2>
+        <h2>Book/Journals </h2>
         <p>View books and journals available in OPAC and newly uploaded collections.</p>
       </header>
 
@@ -74,7 +72,7 @@ export const BrowseResourcesPage = () => {
             <input value={search} onChange={(event) => setSearch(event.target.value)} />
           </label>
           <label>
-            Resource Type
+            Type
             <select
               value={resourceType}
               onChange={(event) => setResourceType(event.target.value as '' | 'book' | 'journal')}
@@ -84,27 +82,13 @@ export const BrowseResourcesPage = () => {
               <option value="journal">Journal</option>
             </select>
           </label>
-          <label>
-            Category
-            <select
-              value={category}
-              onChange={(event) =>
-                setCategory(event.target.value as '' | 'Dentistry' | 'Nursing' | 'Medicine')
-              }
-            >
-              <option value="">All</option>
-              <option value="Dentistry">Dentistry</option>
-              <option value="Nursing">Nursing</option>
-              <option value="Medicine">Medicine</option>
-            </select>
-          </label>
           <button className="btn" type="button" onClick={load}>
             Apply Filters
           </button>
         </div>
       </Card>
 
-      <Card title="Available Catalog">
+      <Card title="Books/Journals Available Catalog">
         <div className="table-scroll-y">
           <DataTable
             headers={[
@@ -112,7 +96,7 @@ export const BrowseResourcesPage = () => {
               'Type',
               'Author',
               'Call Number',
-              'Category',
+              'Copyright',
               'Copies',
               
             ]}
@@ -121,7 +105,7 @@ export const BrowseResourcesPage = () => {
               item.resource_type,
               renderAuthorCell(item.author),
               item.call_number || '-',
-              item.category || '-',
+              item.copyright || '-',
               `${item.available_copies}/${item.total_copies}`,
              
             ])}
@@ -146,7 +130,7 @@ export const BrowseResourcesPage = () => {
               <strong>Call Number:</strong> {selectedResource.call_number || '-'}
             </div>
             <div>
-              <strong>Category:</strong> {selectedResource.category || '-'}
+              <strong>Copyright:</strong> {selectedResource.copyright || '-'}
             </div>
             <div>
               <strong>Copies:</strong> {selectedResource.available_copies}/{selectedResource.total_copies}

@@ -16,6 +16,7 @@ export const RequestManagementPage = () => {
   const [actionStatus, setActionStatus] = useState<ResourceRequest['status'] | null>(null)
   const [actionAdminNote, setActionAdminNote] = useState('')
   const [actionIsLoading, setActionIsLoading] = useState(false)
+  const [queueSearch, setQueueSearch] = useState('')
   const [editingItem, setEditingItem] = useState<RequestRow | null>(null)
   const [editStatus, setEditStatus] = useState<ResourceRequest['status']>('approved')
   const [editAdminNote, setEditAdminNote] = useState('')
@@ -140,25 +141,54 @@ export const RequestManagementPage = () => {
     await load()
   }
 
+  const filteredRequests = requests.filter((item) => {
+    const normalizedSearch = queueSearch.trim().toLowerCase()
+
+    if (!normalizedSearch) {
+      return true
+    }
+
+    return [
+      item.profiles?.full_name || '',
+      item.profiles?.program || '',
+      item.title,
+      item.resource_type,
+      item.details || '',
+      item.status,
+      item.admin_notes || '',
+    ].some((value) => value.toLowerCase().includes(normalizedSearch))
+  })
+
   return (
     <div className="page-grid">
       <header>
-        <h2>Book/Resource Request Management</h2>
-        <p>Approve or reject submitted requests and monitor resource demand.</p>
+        <h2>Book Suggestions Management</h2>
+        <p>Approve or reject submitted suggestions and monitor resource demand.</p>
       </header>
 
       <Card title="All Requests">
+        <div className="filters-grid" style={{ marginBottom: '0.75rem' }}>
+          <label>
+            Search
+            <input
+              value={queueSearch}
+              onChange={(event) => setQueueSearch(event.target.value)}
+              placeholder="Search student, program, title, type, details, status"
+            />
+          </label>
+        </div>
         <div className="table-scroll-y">
           <DataTable
-            headers={['Student', 'Program', 'Title', 'Type', 'Status', 'Admin Notes', 'Actions']}
-            rows={requests.map((item) => [
+            headers={['Student', 'Program', 'Title', 'Type', 'Details', 'Status', 'Admin Notes', 'Actions']}
+            rows={filteredRequests.map((item) => [
               item.profiles?.full_name || '-',
               item.profiles?.program || '-',
               item.title,
               item.resource_type,
+              item.details || '-',
               item.status,
               item.admin_notes || '-',
-              <div className="actions actions-nowrap" key={item.id}>
+              <div className="table-actions actions-nowrap" key={item.id}>
                 {item.status === 'pending' ? (
                   <>
                     <ActionIconButton

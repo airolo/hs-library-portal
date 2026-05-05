@@ -10,9 +10,9 @@ interface NavItem {
 
 const studentNav: NavItem[] = [
   { label: 'Dashboard', to: '/student' },
-  { label: 'Browse Resources', to: '/student/resources' },
-  { label: 'Research', to: '/student/research' },
-  { label: 'Resource Requests', to: '/student/requests' },
+  { label: 'Books/Journals', to: '/student/resources' },
+  { label: 'Unpublished Materials', to: '/student/research' },
+  { label: 'Book Suggestions', to: '/student/requests' },
   { label: 'Announcements', to: '/student/announcements' },
   { label: 'Feedback & Issues', to: '/student/feedback' },
 ]
@@ -20,9 +20,9 @@ const studentNav: NavItem[] = [
 const adminNav: NavItem[] = [
   { label: 'Admin Dashboard', to: '/admin' },
   { label: 'Registered Students', to: '/admin/attendance' },
-  { label: 'Add Resources', to: '/admin/resources' },
-  { label: 'Research Management', to: '/admin/research' },
-  { label: 'Request Management', to: '/admin/requests' },
+  { label: 'Add Books/Journals', to: '/admin/resources' },
+  { label: 'Thesis Management', to: '/admin/research' },
+  { label: 'Suggestions Management', to: '/admin/requests' },
   { label: 'Announcements & Events', to: '/admin/announcements' },
   { label: 'Feedback Management', to: '/admin/feedback' },
 ]

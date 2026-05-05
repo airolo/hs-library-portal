@@ -25,12 +25,12 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     return {
       id: authUser.id,
       email: authUser.email ?? '',
-      full_name: typeof metadata.full_name === 'string' && metadata.full_name.length > 0
-        ? metadata.full_name
-        : authUser.email?.split('@')[0] ?? 'Student User',
+      full_name:
+        typeof metadata.full_name === 'string' && metadata.full_name.length > 0
+          ? metadata.full_name
+          : authUser.email?.split('@')[0] ?? 'Student User',
       role,
       program: typeof metadata.program === 'string' ? metadata.program : null,
-      year_level: typeof metadata.year_level === 'number' ? metadata.year_level : null,
       created_at: new Date().toISOString(),
     }
   }, [])
@@ -142,13 +142,15 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     return { error: error?.message ?? null }
   }
 
-  const signUp = async ({ email, password, fullName, program, yearLevel }: {
+  const signUp = async ({ email, password, firstName, lastName, program }: {
     email: string
     password: string
-    fullName: string
+    firstName: string
+    lastName: string
     program?: string
-    yearLevel?: number
   }) => {
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -157,7 +159,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
           full_name: fullName,
           role: 'student' satisfies UserRole,
           program: program || null,
-          year_level: yearLevel || null,
         },
       },
     })
@@ -173,7 +174,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         full_name: fullName,
         role: 'student',
         program: program || null,
-        year_level: yearLevel || null,
       })
 
       if (profileError) {

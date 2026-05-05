@@ -9,9 +9,9 @@ export interface AuthContextValue {
   signUp: (payload: {
     email: string
     password: string
-    fullName: string
+    firstName: string
+    lastName: string
     program?: string
-    yearLevel?: number
   }) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>

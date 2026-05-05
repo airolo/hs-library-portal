@@ -6,9 +6,13 @@ create table if not exists public.profiles (
   full_name text not null,
   role text not null check (role in ('student', 'admin')),
   program text,
-  year_level int,
   created_at timestamptz not null default now()
 );
+
+alter table public.profiles
+drop column if exists first_name,
+drop column if exists last_name,
+drop column if exists year_level;
 
 create table if not exists public.announcements (
   id uuid primary key default uuid_generate_v4(),
@@ -33,7 +37,7 @@ create table if not exists public.research_repository (
   id uuid primary key default uuid_generate_v4(),
   title text not null,
   abstract text not null,
-  thesis_category text not null default 'Undergrad Theses' check (thesis_category in ('Undergrad Theses', 'Man Theses (Masters)')),
+  thesis_category text not null default 'Undergraduate Nursing Thesis' check (thesis_category in ('Undergraduate Nursing Thesis', 'Master of Arts in Nursing Thesis')),
   location text not null default 'Unassigned shelf',
   program text not null,
   year int not null,
@@ -48,25 +52,20 @@ alter table public.research_repository
 add column if not exists location text not null default 'Unassigned shelf';
 
 alter table public.research_repository
-add column if not exists thesis_category text not null default 'Undergrad Theses';
+add column if not exists thesis_category text not null default 'Undergraduate Nursing Thesis';
 
 update public.research_repository
-set thesis_category = 'Undergrad Theses'
-where thesis_category is null;
+set thesis_category = 'Undergraduate Nursing Thesis'
+where thesis_category is null
+  or thesis_category = 'Undergrad Theses'
+  or thesis_category = 'Man Theses (Masters)';
 
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conname = 'research_repository_thesis_category_check'
-      and conrelid = 'public.research_repository'::regclass
-  ) then
-    alter table public.research_repository
-    add constraint research_repository_thesis_category_check
-    check (thesis_category in ('Undergrad Theses', 'Man Theses (Masters)'));
-  end if;
-end $$;
+alter table public.research_repository
+drop constraint if exists research_repository_thesis_category_check;
+
+alter table public.research_repository
+add constraint research_repository_thesis_category_check
+check (thesis_category in ('Undergraduate Nursing Thesis', 'Master of Arts in Nursing Thesis'));
 
 create table if not exists public.resource_requests (
   id uuid primary key default uuid_generate_v4(),
@@ -85,7 +84,7 @@ create table if not exists public.library_resources (
   resource_type text not null check (resource_type in ('book', 'journal')),
   author text not null,
   call_number text,
-  category text,
+  copyright text,
   description text,
   total_copies int not null check (total_copies >= 1),
   available_copies int not null check (available_copies >= 0 and available_copies <= total_copies),
@@ -96,10 +95,14 @@ alter table public.library_resources
 add column if not exists call_number text;
 
 alter table public.library_resources
+add column if not exists copyright text;
+
+alter table public.library_resources
 drop column if exists location,
 drop column if exists publisher,
 drop column if exists publication_year,
-drop column if exists identifier_code;
+drop column if exists identifier_code,
+drop column if exists category;
 
 create table if not exists public.resource_borrow_transactions (
   id uuid primary key default uuid_generate_v4(),
@@ -120,7 +123,6 @@ create table if not exists public.feedback_reports (
   student_id uuid not null references public.profiles(id) on delete cascade,
   category text not null check (category in ('book_request', 'journal_access', 'repository_issue', 'general_feedback', 'bug_report')),
   description text not null,
-  priority text not null default 'medium' check (priority in ('low', 'medium', 'high')),
   status text not null default 'new' check (status in ('new', 'in_review', 'resolved', 'closed')),
   admin_response text,
   created_at timestamptz not null default now(),
@@ -128,13 +130,14 @@ create table if not exists public.feedback_reports (
 );
 
 alter table public.feedback_reports
-drop column if exists subject;
+drop column if exists subject,
+drop column if exists priority;
 
 create index if not exists idx_research_program_year on public.research_repository(program, year);
 create index if not exists idx_research_keywords on public.research_repository using gin (keywords);
 create index if not exists idx_attendance_student_date on public.attendance_logs(student_id, date desc);
 create index if not exists idx_feedback_student_status on public.feedback_reports(student_id, status, created_at desc);
-create index if not exists idx_library_resources_search on public.library_resources(title, author, category);
+create index if not exists idx_library_resources_search on public.library_resources(title, author, copyright, call_number);
 create index if not exists idx_borrow_tx_student_status on public.resource_borrow_transactions(student_id, status);
 
 alter table public.profiles enable row level security;
@@ -312,7 +315,7 @@ insert into public.library_resources(
   resource_type,
   author,
   call_number,
-  category,
+  copyright,
   description,
   total_copies,
   available_copies
@@ -323,7 +326,7 @@ values
     'book',
     'Kumar, Abbas, Aster',
     'QZ 4 R635 2020',
-    'Pathology',
+    '2020',
     'Core pathology textbook used in medicine training.',
     6,
     6
@@ -333,7 +336,7 @@ values
     'book',
     'Jameson et al.',
     'WB 115 H322 2022',
-    'Internal Medicine',
+    '2022',
     'Comprehensive internal medicine reference.',
     5,
     4
@@ -343,7 +346,7 @@ values
     'journal',
     'The Lancet Editorial Team',
     'PER W1 LA787',
-    'General Medicine',
+    '2026',
     'Peer-reviewed weekly medical journal.',
     12,
     12

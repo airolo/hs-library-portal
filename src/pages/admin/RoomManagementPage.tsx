@@ -8,6 +8,7 @@ import type { FeedbackReport } from '../../types/domain'
 
 export const FeedbackManagementPage = () => {
   const [reports, setReports] = useState<FeedbackReport[]>([])
+  const [queueSearch, setQueueSearch] = useState('')
   const [selectedReport, setSelectedReport] = useState<FeedbackReport | null>(null)
   const [targetStatus, setTargetStatus] = useState<FeedbackReport['status'] | null>(null)
   const [adminResponse, setAdminResponse] = useState('')
@@ -31,10 +32,6 @@ export const FeedbackManagementPage = () => {
       default:
         return category
     }
-  }
-
-  const getPriorityLabel = (value: FeedbackReport['priority']) => {
-    return value.charAt(0).toUpperCase() + value.slice(1)
   }
 
   const getStatusLabel = (value: FeedbackReport['status']) => {
@@ -155,6 +152,23 @@ export const FeedbackManagementPage = () => {
     }
   }
 
+  const filteredReports = reports.filter((item) => {
+    const normalizedSearch = queueSearch.trim().toLowerCase()
+
+    if (!normalizedSearch) {
+      return true
+    }
+
+    return [
+      item.profiles?.full_name || '',
+      item.profiles?.program || '',
+      getCategoryLabel(item.category),
+      item.description,
+      getStatusLabel(item.status),
+      item.admin_response || '',
+    ].some((value) => value.toLowerCase().includes(normalizedSearch))
+  })
+
   return (
     <div className="page-grid">
       <header>
@@ -163,18 +177,27 @@ export const FeedbackManagementPage = () => {
       </header>
 
       <Card title="Submitted Reports">
+        <div className="filters-grid" style={{ marginBottom: '0.75rem' }}>
+          <label>
+            Search
+            <input
+              value={queueSearch}
+              onChange={(event) => setQueueSearch(event.target.value)}
+              placeholder="Search student, program, category, description, status"
+            />
+          </label>
+        </div>
         <div className="table-scroll-y">
           <DataTable
-            headers={['Student', 'Program', 'Category', 'Priority', 'Description', 'Status', 'Admin Response', 'Actions']}
-            rows={reports.map((item) => [
+            headers={['Student', 'Program', 'Category', 'Description', 'Status', 'Admin Response', 'Actions']}
+            rows={filteredReports.map((item) => [
               item.profiles?.full_name || '-',
               item.profiles?.program || '-',
               getCategoryLabel(item.category),
-              getPriorityLabel(item.priority),
               item.description,
               getStatusLabel(item.status),
               item.admin_response || '-',
-              <div className="actions actions-nowrap" key={item.id}>
+              <div className="table-actions actions-nowrap" key={item.id}>
                 {item.status === 'resolved' ? (
                   <>
                     <ActionIconButton

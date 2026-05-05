@@ -42,7 +42,8 @@ export const ResearchRepositoryPage = () => {
       status: 'approved',
       thesisCategory: thesisCategory || undefined,
     })
-    setItems(data)
+    const sorted = [...data].sort((a, b) => a.title.localeCompare(b.title))
+    setItems(sorted)
   }
 
   useEffect(() => {
@@ -51,7 +52,8 @@ export const ResearchRepositoryPage = () => {
     const initialize = async () => {
       const data = await researchService.list({ status: 'approved' })
       if (mounted) {
-        setItems(data)
+        const sorted = [...data].sort((a, b) => a.title.localeCompare(b.title))
+        setItems(sorted)
       }
     }
 
@@ -65,8 +67,8 @@ export const ResearchRepositoryPage = () => {
   return (
     <div className="page-grid">
       <header>
-        <h2>Research Repository</h2>
-        <p>Search and filter approved research outputs by title, author, and year.</p>
+        <h2>Unpublished Materials</h2>
+        <p>Search and filter thesis outputs by title, author, and year.</p>
       </header>
 
       <Card title="Filters">
@@ -82,8 +84,8 @@ export const ResearchRepositoryPage = () => {
               onChange={(event) => setThesisCategory(event.target.value as '' | ResearchItem['thesis_category'])}
             >
               <option value="">All</option>
-              <option value="Undergrad Theses">Undergrad Theses</option>
-              <option value="Man Theses (Masters)">Man Theses (Masters)</option>
+              <option value="Undergraduate Nursing Thesis">Undergraduate Nursing Thesis</option>
+              <option value="Master of Arts in Nursing Thesis">Master of Arts in Nursing Thesis</option>
             </select>
           </label>
           <label>

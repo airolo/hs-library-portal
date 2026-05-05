@@ -7,7 +7,6 @@ import type { FeedbackReport } from '../../types/domain'
 export const FeedbackReportsPage = () => {
   const [reports, setReports] = useState<FeedbackReport[]>([])
   const [category, setCategory] = useState<FeedbackReport['category']>('general_feedback')
-  const [priority, setPriority] = useState<FeedbackReport['priority']>('medium')
   const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -45,9 +44,8 @@ export const FeedbackReportsPage = () => {
     setIsSubmitting(true)
 
     try {
-      await feedbackService.create({ category, description, priority })
+      await feedbackService.create({ category, description })
       setDescription('')
-      setPriority('medium')
       setCategory('general_feedback')
       setSubmitSuccess(true)
       await loadData()
@@ -79,10 +77,6 @@ export const FeedbackReportsPage = () => {
       default:
         return value
     }
-  }
-
-  const getPriorityLabel = (value: FeedbackReport['priority']) => {
-    return value.charAt(0).toUpperCase() + value.slice(1)
   }
 
   const getStatusLabel = (value: FeedbackReport['status']) => {
@@ -123,14 +117,6 @@ export const FeedbackReportsPage = () => {
             </select>
           </label>
           <label>
-            Priority
-            <select value={priority} onChange={(event) => setPriority(event.target.value as FeedbackReport['priority'])}>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </label>
-          <label>
             Description
             <textarea required rows={4} value={description} onChange={(event) => setDescription(event.target.value)} />
           </label>
@@ -143,11 +129,11 @@ export const FeedbackReportsPage = () => {
       <Card title="My Reports">
         <div className="table-scroll-y">
           <DataTable
-            headers={['Date', 'Category', 'Priority', 'Status', 'Admin Response']}
+            headers={['Date', 'Category', 'Description', 'Status', 'Admin Response']}
             rows={reports.map((report) => [
               new Date(report.created_at).toLocaleDateString(),
               getCategoryLabel(report.category),
-              getPriorityLabel(report.priority),
+              report.description,
               getStatusLabel(report.status),
               report.admin_response || '-',
             ])}

@@ -97,7 +97,7 @@ export const AdminDashboardPage = () => {
       id: `student-${item.id}`,
       created_at: item.created_at,
       title: `New Student: ${item.full_name}`,
-      subtitle: `${item.program || 'Unspecified Program'} • Year ${item.year_level ?? '-'}`,
+      subtitle: item.program || 'Unspecified Program',
     }))
 
     const latestActivity = [...latestRequests, ...latestFeedback, ...latestRegistrations]

@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ActionIconButton } from '../../components/ui/ActionIconButton'
 import { Card } from '../../components/ui/Card'
 import { DataTable } from '../../components/ui/DataTable'
 import { Modal } from '../../components/ui/Modal'
 import { researchService } from '../../services/libraryService'
 import type { ResearchItem } from '../../types/domain'
+import { getExcelNumber, getExcelText, readExcelRows } from '../../utils/excelImport'
 
 const DEFAULT_PROGRAM = 'Nursing'
 const DEFAULT_LOCATION = 'Unassigned shelf'
 const DEFAULT_ABSTRACT = 'No abstract provided.'
-const DEFAULT_THESIS_CATEGORY: ResearchItem['thesis_category'] = 'Undergrad Theses'
+const DEFAULT_THESIS_CATEGORY: ResearchItem['thesis_category'] = 'Undergraduate Nursing Thesis'
 
 const renderAuthorVertical = (author: string) => {
   const commaSeparatedAuthors = author
@@ -38,6 +39,7 @@ const renderAuthorVertical = (author: string) => {
 
 export const ResearchManagementPage = () => {
   const [items, setItems] = useState<ResearchItem[]>([])
+  const importInputRef = useRef<HTMLInputElement>(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
@@ -51,10 +53,116 @@ export const ResearchManagementPage = () => {
   const [deletingItem, setDeletingItem] = useState<ResearchItem | null>(null)
   const [deleteIsLoading, setDeleteIsLoading] = useState(false)
   const [queueSearch, setQueueSearch] = useState('')
+  const [importIsLoading, setImportIsLoading] = useState(false)
+  const [importFeedback, setImportFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const load = async () => {
     const data = await researchService.list()
-    setItems(data)
+    const sorted = [...data].sort((a, b) => a.title.localeCompare(b.title))
+    setItems(sorted)
+  }
+
+  const openImportDialog = () => {
+    importInputRef.current?.click()
+  }
+
+  const resolveThesisCategory = (value: string) => {
+    const normalizedValue = value.trim().toLowerCase()
+
+    if (normalizedValue.includes('master')) {
+      return 'Master of Arts in Nursing Thesis' as const
+    }
+
+    return 'Undergraduate Nursing Thesis' as const
+  }
+
+  const handleExcelImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file) {
+      return
+    }
+
+    setImportFeedback(null)
+    setImportIsLoading(true)
+
+    try {
+      const rows = await readExcelRows(file)
+
+      if (rows.length === 0) {
+        throw new Error('The selected workbook does not contain any rows to import.')
+      }
+
+      let importedCount = 0
+      const skippedRows: string[] = []
+
+      for (const [index, row] of rows.entries()) {
+        try {
+          const importedTitle = getExcelText(row, ['title'])
+          const importedAuthor = getExcelText(row, ['author', 'author/s', 'authors'])
+          const importedYear = getExcelNumber(row, ['year'])
+
+          if (!importedTitle) {
+            throw new Error('Title is required.')
+          }
+
+          if (!importedAuthor) {
+            throw new Error('Author is required.')
+          }
+
+          if (!importedYear) {
+            throw new Error('Year is required.')
+          }
+
+          const categoryText = getExcelText(row, ['thesis category', 'thesis_category', 'category'])
+          const importedStatus = getExcelText(row, ['status']).toLowerCase()
+          const importedKeywords = getExcelText(row, ['keywords'])
+            .split(/[,;|]/)
+            .map((keyword) => keyword.trim())
+            .filter(Boolean)
+
+          await researchService.create({
+            title: importedTitle,
+            author: importedAuthor,
+            thesis_category: categoryText ? resolveThesisCategory(categoryText) : DEFAULT_THESIS_CATEGORY,
+            location: getExcelText(row, ['location']) || DEFAULT_LOCATION,
+            program: getExcelText(row, ['program']) || DEFAULT_PROGRAM,
+            year: importedYear,
+            abstract: getExcelText(row, ['abstract']) || DEFAULT_ABSTRACT,
+            keywords: importedKeywords,
+            status: importedStatus === 'pending' || importedStatus === 'rejected' ? importedStatus : 'approved',
+            file_url: getExcelText(row, ['file url', 'file_url']) || null,
+          })
+
+          importedCount += 1
+        } catch (rowError) {
+          skippedRows.push(
+            `Row ${index + 2}: ${rowError instanceof Error ? rowError.message : 'Invalid row data.'}`,
+          )
+        }
+      }
+
+      await load()
+
+      if (importedCount === 0) {
+        throw new Error(skippedRows[0] || 'No rows could be imported from the workbook.')
+      }
+
+      const suffix = importedCount === 1 ? 'entry' : 'entries'
+      const skippedMessage = skippedRows.length > 0 ? ` ${skippedRows.length} row(s) were skipped.` : ''
+      setImportFeedback({
+        type: 'success',
+        message: `Imported ${importedCount} thesis ${suffix}.${skippedMessage}`,
+      })
+    } catch (error) {
+      setImportFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to import the Excel file.',
+      })
+    } finally {
+      setImportIsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -63,7 +171,8 @@ export const ResearchManagementPage = () => {
     const initialize = async () => {
       const data = await researchService.list()
       if (mounted) {
-        setItems(data)
+        const sorted = [...data].sort((a, b) => a.title.localeCompare(b.title))
+        setItems(sorted)
       }
     }
 
@@ -171,11 +280,30 @@ export const ResearchManagementPage = () => {
   return (
     <div className="page-grid">
       <header>
-        <h2>Research Repository Management</h2>
+        <h2>Thesis Management</h2>
         <p>Upload and manage repository submissions.</p>
       </header>
 
-      <Card title="Upload Research Entry">
+      <Card
+        title="Upload Research Entry"
+        actions={
+          <button type="button" className="btn xs" onClick={openImportDialog} disabled={importIsLoading}>
+            {importIsLoading ? 'Importing...' : 'Import Excel'}
+          </button>
+        }
+      >
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleExcelImport}
+          style={{ display: 'none' }}
+        />
+        {importFeedback ? (
+          <div className={importFeedback.type === 'error' ? 'error-message' : 'success-message'}>
+            {importFeedback.message}
+          </div>
+        ) : null}
         <form onSubmit={submit} className="form-grid compact-admin-form">
           {errorMessage && <p className="error-text full-row">{errorMessage}</p>}
           <label>
@@ -192,8 +320,8 @@ export const ResearchManagementPage = () => {
               value={thesisCategory}
               onChange={(event) => setThesisCategory(event.target.value as ResearchItem['thesis_category'])}
             >
-              <option value="Undergrad Theses">Undergrad Theses</option>
-              <option value="Man Theses (Masters)">Man Theses (Masters)</option>
+              <option value="Undergraduate Nursing Thesis">Undergraduate Nursing Thesis</option>
+              <option value="Master of Arts in Nursing Thesis">Master of Arts in Nursing Thesis</option>
             </select>
           </label>
           <label>
@@ -227,7 +355,7 @@ export const ResearchManagementPage = () => {
               item.thesis_category,
               renderAuthorVertical(item.author),
               item.year,
-              <div className="actions actions-nowrap" key={item.id}>
+              <div className="table-actions" key={item.id}>
                 <ActionIconButton icon="edit" label="Edit" onClick={() => handleEdit(item)} />
                 <ActionIconButton
                   icon="delete"
@@ -283,8 +411,8 @@ export const ResearchManagementPage = () => {
                 value={editThesisCategory}
                 onChange={(event) => setEditThesisCategory(event.target.value as ResearchItem['thesis_category'])}
               >
-                <option value="Undergrad Theses">Undergrad Theses</option>
-                <option value="Man Theses (Masters)">Man Theses (Masters)</option>
+                <option value="Undergraduate Nursing Thesis">Undergraduate Nursing Thesis</option>
+                <option value="Master of Arts in Nursing Thesis">Master of Arts in Nursing Thesis</option>
               </select>
             </label>
             <label>
