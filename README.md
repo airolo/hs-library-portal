@@ -17,9 +17,9 @@ Student features:
 
 Admin features:
 - Dashboard with registered students, pending requests, feedback, and announcements
-- Manage student users and portal activity
-- Research repository management with create, approve, and reject actions
-- Resource request management with approve, reject, and admin notes
+- Manage student users 
+- Thesis Management with create, edit and delete actions.
+- Suggestions Management with approve, reject, and admin notes
 - Announcement and event management with create, update, and delete actions
 - Feedback and issue management with resolve actions and admin responses
 - Excel import support for Books/Journals and Thesis Management
@@ -99,7 +99,7 @@ npm run dev
 Schema and RLS policies are in [supabase/schema.sql](supabase/schema.sql).
 
 Role-based control:
-- Students can view resources, submit requests, track their requests, and send feedback.
+- Students can view resources, submit book suggestions, track their requests, and send feedback.
 - Admins can manage announcements, research, requests, feedback, attendance, and room-related workflows.
 
 ## Recent Updates
