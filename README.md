@@ -1,31 +1,36 @@
 # Health Sciences Library Portal
 
-Full-stack web application for a College of Medicine Health Sciences Library, built with React + TypeScript and Supabase (Auth + PostgreSQL + RLS).
+Full-stack Health Sciences Library portal built with React + TypeScript, Vite, and Supabase (Auth + PostgreSQL + RLS). The app provides role-based student and admin workflows for browsing resources, submitting requests and feedback, and managing portal content.
 
 ## Features
 
 Student features:
 - Email authentication (login/register)
 - Dashboard with latest announcements and notifications
-- Browse Resources search and filtering
-- Research repository search and filtering
-- Book/resource request submission with status tracking
-- Announcements and events viewing
-- Feedback and issues submission 
+- Browse resources with search and filtering
+- Search and filter the research repository
+- Submit book and journal suggestions with request tracking
+- Track request details, status updates, and admin notes in a scrollable table
+- Submit feedback and issue reports with a personal report history
+- Track feedback descriptions, status, and admin responses in a scrollable table
+- View announcements, events, and room reservation updates
 
 Admin features:
-- Dashboard (registered students, pending requests, feedback action, announcements)    
-- Quick Action buttons and Latest Activity
-- Manage User's (Students)
-- Research repository management (create/approve/reject)
-- Resource request management (approve/reject)
-- Announcement/event management (create/update/delete)
-- Feedback and Issues management with resolve and admin response 
+- Dashboard with registered students, pending requests, feedback, and announcements
+- Manage student users and portal activity
+- Research repository management with create, approve, and reject actions
+- Resource request management with approve, reject, and admin notes
+- Announcement and event management with create, update, and delete actions
+- Feedback and issue management with resolve actions and admin responses
+- Attendance management and room-related workflows
+- Excel import support for Books/Journals and Thesis Management
+- Search filtering on large request and feedback management tables
 
 ## Tech Stack
 
 - Frontend: React, TypeScript, Vite, React Router
-- Forms and utilities: react-hook-form, zod, date-fns
+- UI patterns: reusable cards, modal dialogs, tables, and responsive layouts
+- Data import: xlsx for Excel-based bulk import
 - Backend: Supabase Auth and PostgreSQL
 - Security: Row Level Security policies in SQL schema
 
@@ -38,6 +43,7 @@ src/
     layout/
     ui/
   contexts/
+  hooks/
   lib/
   pages/
     admin/
@@ -47,7 +53,9 @@ src/
   services/
   types/
   utils/
+    excelImport.ts
 supabase/
+  library-resources-only.sql
   schema.sql
 ```
 
@@ -75,6 +83,7 @@ VITE_SUPABASE_RESEARCH_BUCKET=research-pdfs
 3. Apply database schema:
 - Open Supabase SQL editor.
 - Run [supabase/schema.sql](supabase/schema.sql).
+- If you only want the library resources seed and table setup, run [supabase/library-resources-only.sql](supabase/library-resources-only.sql).
 
 4. Create an admin account:
 - Register a user (or create via Supabase Auth).
@@ -91,8 +100,16 @@ npm run dev
 Schema and RLS policies are in [supabase/schema.sql](supabase/schema.sql).
 
 Role-based control:
-- Students can view resources, requests, and give feedbacks.
-- Admins can manage announcements, research, requests, feedbacks, and monitor all users.
+- Students can view resources, submit requests, track their requests, and send feedback.
+- Admins can manage announcements, research, requests, feedback, attendance, and room-related workflows.
+
+## Recent Updates
+
+- Request tracking now includes details and admin notes for book and journal suggestions.
+- Feedback reports now include descriptions plus admin responses.
+- Large request and feedback tables include scrollable table containers for better usability.
+- Admin request and feedback management pages include search filtering.
+- Books/Journals and Thesis Management support Excel import.
 
 ## Build
 
