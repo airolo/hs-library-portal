@@ -35,17 +35,6 @@ export const ResearchRepositoryPage = () => {
   const [thesisCategory, setThesisCategory] = useState<'' | ResearchItem['thesis_category']>('')
   const [year, setYear] = useState<number | ''>('')
 
-  const loadItems = async () => {
-    const data = await researchService.list({
-      query: query || undefined,
-      year: year || undefined,
-      status: 'approved',
-      thesisCategory: thesisCategory || undefined,
-    })
-    const sorted = [...data].sort((a, b) => a.title.localeCompare(b.title))
-    setItems(sorted)
-  }
-
   useEffect(() => {
     let mounted = true
 
@@ -63,6 +52,29 @@ export const ResearchRepositoryPage = () => {
       mounted = false
     }
   }, [])
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadFiltered = async () => {
+      const data = await researchService.list({
+        query: query || undefined,
+        year: year || undefined,
+        status: 'approved',
+        thesisCategory: thesisCategory || undefined,
+      })
+      if (mounted) {
+        const sorted = [...data].sort((a, b) => a.title.localeCompare(b.title))
+        setItems(sorted)
+      }
+    }
+
+    void loadFiltered()
+
+    return () => {
+      mounted = false
+    }
+  }, [query, thesisCategory, year])
 
   return (
     <div className="page-grid">
@@ -98,9 +110,6 @@ export const ResearchRepositoryPage = () => {
               onChange={(event) => setYear(event.target.value ? Number(event.target.value) : '')}
             />
           </label>
-          <button className="btn" type="button" onClick={loadItems}>
-            Apply Filters
-          </button>
         </div>
       </Card>
 

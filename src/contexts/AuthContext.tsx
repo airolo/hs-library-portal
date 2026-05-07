@@ -188,12 +188,20 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     await supabase.auth.signOut()
   }
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/login',
+    })
+
+    return { error: error?.message ?? null }
+  }
+
   const refreshProfile = useCallback(async () => {
     await loadProfile(user)
   }, [loadProfile, user])
 
   const value: AuthContextValue = useMemo(
-    () => ({ user, profile, loading, signIn, signUp, signOut, refreshProfile }),
+    () => ({ user, profile, loading, signIn, signUp, signOut, refreshProfile, resetPassword }),
     [user, profile, loading, refreshProfile],
   )
 

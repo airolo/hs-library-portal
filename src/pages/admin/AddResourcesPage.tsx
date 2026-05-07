@@ -279,6 +279,9 @@ export const AddResourcesPage = () => {
         ) : null}
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">Resource saved successfully!</div>}
+        <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem', lineHeight: 1.5 }}>
+          <strong>Excel Format:</strong> Your file should have columns: <code>Title</code>, <code>Type</code> (Book/Journal), <code>Author</code>, <code>Call Number</code>, <code>Copyright</code>, <code>Total Copies</code>, and <code>Available Copies</code>.
+        </p>
         <form className="form-grid compact-admin-form" onSubmit={submit}>
           <label>
             Title

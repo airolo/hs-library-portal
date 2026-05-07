@@ -57,7 +57,7 @@ export const RegisterPage = () => {
           <h1>Join the portal with a cleaner, more modern sign-up flow.</h1>
           <p className="auth-hero-copy">
             Create your library account once, then use it for books, journals, suggestions, and
-            announcements in one place.
+             view announcements in one place.
           </p>
 
           <div className="auth-hero-pills">

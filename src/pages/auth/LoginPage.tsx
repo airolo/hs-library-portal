@@ -103,6 +103,9 @@ export const LoginPage = () => {
           <p className="auth-link-row">
             No account yet? <Link to="/register">Register Here</Link>
           </p>
+          <p className="auth-link-row">
+            <Link to="/forgot-password">Forgot Password?</Link>
+          </p>
           <p className="credit-text">Developed by: Bradley Soloria</p>
         </section>
       </div>

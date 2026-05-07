@@ -7,22 +7,21 @@ Full-stack Health Sciences Library portal built with React + TypeScript, Vite, a
 Student features:
 - Email authentication (login/register)
 - Dashboard with latest announcements and notifications
-- Browse resources with search and filtering
-- Search and filter the research repository
+- Browse books/journals with search and filtering
+- Search and filter the thesis in Unpublished Materials
 - Submit book and journal suggestions with request tracking
-- Track request details, status updates, and admin notes in a scrollable table
+- Track suggestion details, status updates, and admin notes in a scrollable table
 - Submit feedback and issue reports with a personal report history
 - Track feedback descriptions, status, and admin responses in a scrollable table
-- View announcements, events, and room reservation updates
+- View announcements and events
 
 Admin features:
 - Dashboard with registered students, pending requests, feedback, and announcements
 - Manage student users and portal activity
 - Research repository management with create, approve, and reject actions
-- Resource request management with approve, reject, and admin notes
+- Books/Journals suggestion management with approve, reject, and admin notes
 - Announcement and event management with create, update, and delete actions
 - Feedback and issue management with resolve actions and admin responses
-- Attendance management and room-related workflows
 - Excel import support for Books/Journals and Thesis Management
 - Search filtering on large request and feedback management tables
 

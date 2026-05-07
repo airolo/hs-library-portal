@@ -3,6 +3,7 @@ import { ProtectedRoute } from '../components/auth/ProtectedRoute'
 import { AppShell } from '../components/layout/AppShell'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { RegisterPage } from '../pages/auth/RegisterPage'
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage'
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
 import { AttendanceManagementPage } from '../pages/admin/AttendanceManagementPage'
 import { ResearchManagementPage } from '../pages/admin/ResearchManagementPage'
@@ -22,6 +23,7 @@ export const AppRouter = () => {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
       <Route
         element={

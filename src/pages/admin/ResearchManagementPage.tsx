@@ -304,6 +304,9 @@ export const ResearchManagementPage = () => {
             {importFeedback.message}
           </div>
         ) : null}
+        <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem', lineHeight: 1.5 }}>
+          <strong>Excel Format:</strong> Your file should have columns: <code>Title</code>, <code>Author</code>, <code>Category</code> (Undergraduate Nursing Thesis / Master of Arts in Nursing Thesis), and <code>Year</code>.
+        </p>
         <form onSubmit={submit} className="form-grid compact-admin-form">
           {errorMessage && <p className="error-text full-row">{errorMessage}</p>}
           <label>

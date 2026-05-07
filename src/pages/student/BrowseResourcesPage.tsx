@@ -30,14 +30,6 @@ export const BrowseResourcesPage = () => {
   const [search, setSearch] = useState('')
   const [resourceType, setResourceType] = useState<'' | 'book' | 'journal'>('')
 
-  const load = async () => {
-    const resourceData = await resourceService.list({
-      query: search || undefined,
-      resourceType,
-    })
-    setResources(resourceData)
-  }
-
   useEffect(() => {
     let mounted = true
 
@@ -57,6 +49,27 @@ export const BrowseResourcesPage = () => {
       mounted = false
     }
   }, [])
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadFiltered = async () => {
+      const resourceData = await resourceService.list({
+        query: search || undefined,
+        resourceType: resourceType || undefined,
+      })
+
+      if (mounted) {
+        setResources(resourceData)
+      }
+    }
+
+    void loadFiltered()
+
+    return () => {
+      mounted = false
+    }
+  }, [search, resourceType])
 
   return (
     <div className="page-grid">
@@ -82,9 +95,6 @@ export const BrowseResourcesPage = () => {
               <option value="journal">Journal</option>
             </select>
           </label>
-          <button className="btn" type="button" onClick={load}>
-            Apply Filters
-          </button>
         </div>
       </Card>
 
