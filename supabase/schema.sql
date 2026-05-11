@@ -37,7 +37,7 @@ create table if not exists public.research_repository (
   id uuid primary key default uuid_generate_v4(),
   title text not null,
   abstract text not null,
-  thesis_category text not null default 'Undergraduate Nursing Thesis' check (thesis_category in ('Undergraduate Nursing Thesis', 'Master of Arts in Nursing Thesis')),
+  thesis_category text not null default 'Undergraduate Nursing Thesis' check (thesis_category in ('Undergraduate Nursing Thesis', 'Master of Arts in Nursing Thesis', 'Dissertation')),
   location text not null default 'Unassigned shelf',
   program text not null,
   year int not null,
@@ -65,7 +65,7 @@ drop constraint if exists research_repository_thesis_category_check;
 
 alter table public.research_repository
 add constraint research_repository_thesis_category_check
-check (thesis_category in ('Undergraduate Nursing Thesis', 'Master of Arts in Nursing Thesis'));
+check (thesis_category in ('Undergraduate Nursing Thesis', 'Master of Arts in Nursing Thesis', 'Dissertation'));
 
 create table if not exists public.resource_requests (
   id uuid primary key default uuid_generate_v4(),

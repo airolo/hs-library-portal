@@ -98,6 +98,7 @@ export const ResearchRepositoryPage = () => {
               <option value="">All</option>
               <option value="Undergraduate Nursing Thesis">Undergraduate Nursing Thesis</option>
               <option value="Master of Arts in Nursing Thesis">Master of Arts in Nursing Thesis</option>
+              <option value="Dissertation">Dissertation</option>
             </select>
           </label>
           <label>

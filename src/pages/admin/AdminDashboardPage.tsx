@@ -134,12 +134,12 @@ export const AdminDashboardPage = () => {
 
       <Card title="Quick Actions">
         <div className="quick-links">
-           <Link to="/admin/resources">Add Resources</Link>
-            <Link to="/admin/research">Research Repository</Link>
           <Link to="/admin/attendance">Registered Students</Link>
-          <Link to="/admin/requests">Request Management</Link>
+          <Link to="/admin/resources">Add Books/Journals</Link>
+          <Link to="/admin/research">Thesis Management</Link>
+          <Link to="/admin/requests">Suggestions Management</Link>
+          <Link to="/admin/announcements">Announcements Management</Link>
           <Link to="/admin/feedback">Feedback Management</Link>
-          <Link to="/admin/announcements">Announcement Management</Link>
         </div>
       </Card>
 

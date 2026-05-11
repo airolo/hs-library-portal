@@ -31,7 +31,7 @@ export interface ResearchItem {
   id: string
   title: string
   abstract: string
-  thesis_category: 'Undergraduate Nursing Thesis' | 'Master of Arts in Nursing Thesis'
+  thesis_category: 'Undergraduate Nursing Thesis' | 'Master of Arts in Nursing Thesis' | 'Dissertation'
   location: string
   program: string
   year: number

@@ -69,6 +69,10 @@ export const ResearchManagementPage = () => {
   const resolveThesisCategory = (value: string) => {
     const normalizedValue = value.trim().toLowerCase()
 
+    if (normalizedValue.includes('dissertation')) {
+      return 'Dissertation' as const
+    }
+
     if (normalizedValue.includes('master')) {
       return 'Master of Arts in Nursing Thesis' as const
     }
@@ -305,7 +309,7 @@ export const ResearchManagementPage = () => {
           </div>
         ) : null}
         <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1rem', lineHeight: 1.5 }}>
-          <strong>Excel Format:</strong> Your file should have columns: <code>Title</code>, <code>Author</code>, <code>Category</code> (Undergraduate Nursing Thesis / Master of Arts in Nursing Thesis), and <code>Year</code>.
+          <strong>Excel Format:</strong> Your file should have columns: <code>Title</code>, <code>Author</code>, <code>Category</code> (Undergraduate Nursing Thesis / Master of Arts in Nursing Thesis / Dissertation), and <code>Year</code>.
         </p>
         <form onSubmit={submit} className="form-grid compact-admin-form">
           {errorMessage && <p className="error-text full-row">{errorMessage}</p>}
@@ -325,6 +329,7 @@ export const ResearchManagementPage = () => {
             >
               <option value="Undergraduate Nursing Thesis">Undergraduate Nursing Thesis</option>
               <option value="Master of Arts in Nursing Thesis">Master of Arts in Nursing Thesis</option>
+              <option value="Dissertation">Dissertation</option>
             </select>
           </label>
           <label>
@@ -416,6 +421,7 @@ export const ResearchManagementPage = () => {
               >
                 <option value="Undergraduate Nursing Thesis">Undergraduate Nursing Thesis</option>
                 <option value="Master of Arts in Nursing Thesis">Master of Arts in Nursing Thesis</option>
+                <option value="Dissertation">Dissertation</option>
               </select>
             </label>
             <label>
